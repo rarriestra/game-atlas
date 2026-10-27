@@ -22,7 +22,7 @@ class VideojuegoView(APIView):
         genero = request.query_params.get('genero')
         plataforma = request.query_params.get('plataforma')
         if titulo:
-            result = result.filter(titulo__icontains=titulo)
+            result = result.filter(titulo__icontains=titulo) # i: insensitive (no case sensitive)
         if genero:
             result = result.filter(generos__id=genero)
         if plataforma:

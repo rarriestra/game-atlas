@@ -51,12 +51,12 @@ class VideojuegoSerializer(serializers.ModelSerializer):
 
         # Actualizar campos comunes del modelo Videojuego
         for campo, valor in validated_data.items():
-            setattr(instance, campo, valor)
+            setattr(instance, campo, valor) # copia cada campo recibido al juego existente
         instance.save() # persiste los cambios en la base de datos
 
         # Actualizar relaciones si se proporcionan nuevos valores
         if generos is not None:
-            instance.generos.set(generos) #
+            instance.generos.set(generos) # carga los generos directamente en la tabla intermedia
         if plataformas is not None:
             instance.plataformas.set(plataformas)
         return instance
