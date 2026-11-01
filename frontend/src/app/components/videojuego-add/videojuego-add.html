@@ -1,14 +1,14 @@
 <h2>Nuevo videojuego</h2>
 
-@if (mensaje) {
+@if (mensaje) { <!-- condión para mostrar el mensaje de error en caso de que al presionar el botón Guardar haya algún error en el formulario -->
   <div class="alert alert-danger">{{ mensaje }}</div>
 }
 
-<form #f="ngForm" (ngSubmit)="guardar()">
+<form #f="ngForm" (ngSubmit)="guardar()"> <!-- #f="ngForm" para crear una referencia y asignarla a la variable f para inspeccionar el estado del formulario -->
   <div class="mb-3">
     <label class="form-label" for="titulo">Título *</label>
     <input id="titulo" name="titulo" class="form-control" required maxlength="200"
-           [(ngModel)]="videojuego.titulo">
+           [(ngModel)]="videojuego.titulo"> <!-- [(ngModel)] para enviar el valor del input (lo que está entre paréntesis) al componente y para mostrar el valor en el input (lo que está entre corchetes) desde el componente --> 
   </div>
   <div class="mb-3">
     <label class="form-label" for="sinopsis">Sinopsis</label>

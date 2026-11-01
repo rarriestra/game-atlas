@@ -10,8 +10,8 @@ import { VideojuegoService } from '../../service/videojuego-service';
   templateUrl: './videojuego-details.html',
   styleUrl: './videojuego-details.css'
 })
-export class VideojuegoDetails implements OnInit {
-  videojuego?: Videojuego;
+export class VideojuegoDetails implements OnInit { // implements OnInit provee el método ngOnInit() que se ejecuta al inicializar el componente
+  videojuego?: Videojuego; // El signo de interrogación indica que la propiedad puede ser undefined
   mensaje = '';
 
   constructor(
@@ -21,7 +21,7 @@ export class VideojuegoDetails implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    const id = Number(this.route.snapshot.paramMap.get('id'));
+    const id = Number(this.route.snapshot.paramMap.get('id')); // transforma el parámetro de la ruta con el id del videojuego a un número
     this.videojuegoService.get(id).subscribe({
       next: (data) => this.videojuego = data,
       error: () => this.mensaje = 'El videojuego no existe.'
@@ -29,7 +29,7 @@ export class VideojuegoDetails implements OnInit {
   }
 
   actualizar(): void {
-    if (!this.videojuego?.id) return;
+    if (!this.videojuego?.id) return; // ? evita leer el id si el videojuego no existe (undefined)
     if (!this.videojuego.fecha_lanzamiento) {
       this.videojuego.fecha_lanzamiento = null;
     }

@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, map } from 'rxjs';
+import { Observable, map } from 'rxjs'; // librería para manejar los manejadores de eventos 
 import { ApiResponse, Videojuego } from '../models/videojuego.model';
 
 const baseUrl = '/api/videojuegos/';
