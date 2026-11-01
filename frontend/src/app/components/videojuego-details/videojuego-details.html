@@ -1,1 +1,53 @@
-<p>videojuego-details works!</p>
+<a routerLink="/videojuegos">&larr; Volver al listado</a>
+
+@if (mensaje) {
+  <div class="alert alert-info mt-3">{{ mensaje }}</div>
+}
+
+@if (videojuego) {
+  <div class="row mt-3">
+    <div class="col-md-4 mb-3">
+      @if (videojuego.portada_url) {
+        <img [src]="videojuego.portada_url" [alt]="videojuego.titulo" class="img-fluid rounded">
+      }
+    </div>
+    <div class="col-md-8">
+      <form #f="ngForm" (ngSubmit)="actualizar()">
+        <div class="mb-3">
+          <label class="form-label" for="titulo">Título *</label>
+          <input id="titulo" name="titulo" class="form-control" required maxlength="200"
+                 [(ngModel)]="videojuego.titulo">
+        </div>
+        <div class="mb-3">
+          <label class="form-label" for="sinopsis">Sinopsis</label>
+          <textarea id="sinopsis" name="sinopsis" class="form-control" rows="4"
+                    [(ngModel)]="videojuego.sinopsis"></textarea>
+        </div>
+        <div class="mb-3">
+          <label class="form-label" for="portada">URL de la portada</label>
+          <input id="portada" name="portada_url" type="url" class="form-control"
+                 [(ngModel)]="videojuego.portada_url">
+        </div>
+        <div class="row">
+          <div class="col-md-4 mb-3">
+            <label class="form-label" for="fecha">Lanzamiento</label>
+            <input id="fecha" name="fecha_lanzamiento" type="date" class="form-control"
+                   [(ngModel)]="videojuego.fecha_lanzamiento">
+          </div>
+          <div class="col-md-4 mb-3">
+            <label class="form-label" for="desarrollador">Desarrollador</label>
+            <input id="desarrollador" name="desarrollador" class="form-control" maxlength="100"
+                   [(ngModel)]="videojuego.desarrollador">
+          </div>
+          <div class="col-md-4 mb-3">
+            <label class="form-label" for="distribuidor">Distribuidor</label>
+            <input id="distribuidor" name="distribuidor" class="form-control" maxlength="100"
+                   [(ngModel)]="videojuego.distribuidor">
+          </div>
+        </div>
+        <button type="submit" class="btn btn-primary" [disabled]="f.invalid">Guardar cambios</button>
+        <button type="button" class="btn btn-outline-danger ms-2" (click)="eliminar()">Eliminar</button>
+      </form>
+    </div>
+  </div>
+}

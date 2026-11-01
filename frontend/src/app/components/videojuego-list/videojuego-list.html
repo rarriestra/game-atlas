@@ -1,1 +1,36 @@
-<p>videojuego-list works!</p>
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h2>Videojuegos</h2>
+  <a class="btn btn-primary" routerLink="/videojuegos/nuevo">Nuevo videojuego</a>
+</div>
+
+@if (mensaje) {
+  <div class="alert alert-danger">{{ mensaje }}</div>
+}
+
+<table class="table table-striped align-middle">
+  <thead>
+    <tr>
+      <th>Título</th>
+      <th>Desarrollador</th>
+      <th>Lanzamiento</th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    @for (v of videojuegos; track v.id) {  <!--Armamos la tabla de videojuegos con un bucle for que recorre la lista de videojuegos y genera las filas para cada uno. -->
+      <tr>
+        <td>{{ v.titulo }}</td>
+        <td>{{ v.desarrollador }}</td>
+        <td>{{ v.fecha_lanzamiento }}</td>
+        <td class="text-end">
+          <a class="btn btn-sm btn-outline-secondary" [routerLink]="['/videojuegos', v.id]">Ver / editar</a>
+          <button class="btn btn-sm btn-outline-danger ms-2" (click)="eliminar(v.id)">Eliminar</button>
+        </td>
+      </tr>
+    } @empty {
+      <tr>
+        <td colspan="4" class="text-center text-muted">No hay videojuegos cargados.</td>
+      </tr>
+    }
+  </tbody>
+</table>

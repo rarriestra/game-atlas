@@ -1,1 +1,42 @@
-<p>videojuego-add works!</p>
+<h2>Nuevo videojuego</h2>
+
+@if (mensaje) {
+  <div class="alert alert-danger">{{ mensaje }}</div>
+}
+
+<form #f="ngForm" (ngSubmit)="guardar()">
+  <div class="mb-3">
+    <label class="form-label" for="titulo">Título *</label>
+    <input id="titulo" name="titulo" class="form-control" required maxlength="200"
+           [(ngModel)]="videojuego.titulo">
+  </div>
+  <div class="mb-3">
+    <label class="form-label" for="sinopsis">Sinopsis</label>
+    <textarea id="sinopsis" name="sinopsis" class="form-control" rows="4"
+              [(ngModel)]="videojuego.sinopsis"></textarea>
+  </div>
+  <div class="mb-3">
+    <label class="form-label" for="portada">URL de la portada</label>
+    <input id="portada" name="portada_url" type="url" class="form-control"
+           [(ngModel)]="videojuego.portada_url">
+  </div>
+  <div class="row">
+    <div class="col-md-4 mb-3">
+      <label class="form-label" for="fecha">Lanzamiento</label>
+      <input id="fecha" name="fecha_lanzamiento" type="date" class="form-control"
+             [(ngModel)]="videojuego.fecha_lanzamiento">
+    </div>
+    <div class="col-md-4 mb-3">
+      <label class="form-label" for="desarrollador">Desarrollador</label>
+      <input id="desarrollador" name="desarrollador" class="form-control" maxlength="100"
+             [(ngModel)]="videojuego.desarrollador">
+    </div>
+    <div class="col-md-4 mb-3">
+      <label class="form-label" for="distribuidor">Distribuidor</label>
+      <input id="distribuidor" name="distribuidor" class="form-control" maxlength="100"
+             [(ngModel)]="videojuego.distribuidor">
+    </div>
+  </div>
+  <button type="submit" class="btn btn-primary" [disabled]="f.invalid">Guardar</button>
+  <a class="btn btn-secondary ms-2" routerLink="/videojuegos">Cancelar</a>
+</form>
