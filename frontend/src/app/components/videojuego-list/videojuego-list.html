@@ -1,0 +1,66 @@
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h2>Videojuegos</h2>
+  <a class="btn btn-primary" routerLink="/videojuegos/nuevo">Nuevo videojuego</a>
+</div>
+
+<!-- buscador. Al apretar Enter o "Buscar", (ngSubmit) llama a cargar() con los filtros -->
+<form class="row g-2 mb-3" (ngSubmit)="cargar()">
+  <div class="col-md-6">
+    <!-- Lo que escribís queda en la variable busqueda del .ts -->
+    <input class="form-control" name="busqueda" placeholder="Buscar por título"
+           [(ngModel)]="busqueda">
+  </div>
+  <div class="col-md-3">
+    <!-- Filtro por género: el elegido queda en generoFiltro -->
+    <select class="form-select" name="genero" [(ngModel)]="generoFiltro">
+      <!-- undefined = sin filtro (trae todos) -->
+      <option [ngValue]="undefined">Todos los géneros</option>
+      <!-- Una opción por género traído de la API. [ngValue] guarda el id como número, no como texto -->
+      @for (g of generos; track g.id) {
+        <option [ngValue]="g.id">{{ g.nombre }}</option>
+      }
+    </select>
+  </div>
+  <div class="col-md-3 d-flex gap-2">
+    <!-- type="submit" dispara el (ngSubmit) del form -->
+    <button type="submit" class="btn btn-outline-primary">Buscar</button>
+    <!-- type="button" para que NO envíe el form; limpiar() borra los filtros y recarga -->
+    <button type="button" class="btn btn-outline-secondary" (click)="limpiar()">Limpiar</button>
+  </div>
+</form>
+
+@if (mensaje) {
+  <div class="alert alert-danger">{{ mensaje }}</div>
+}
+
+<table class="table table-striped align-middle">
+  <thead>
+    <tr>
+      <th>Título</th>
+      <th>Desarrollador</th>
+      <th>Géneros</th>
+      <th>Plataformas</th>
+      <th>Lanzamiento</th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    @for (v of videojuegos; track v.id) {  <!--Armamos la tabla de videojuegos con un bucle for que recorre la lista de videojuegos y genera las filas para cada uno. -->
+      <tr>
+        <td>{{ v.titulo }}</td>
+        <td>{{ v.desarrollador }}</td>
+        <td>{{ nombres(v.generos) }}</td>
+        <td>{{ nombres(v.plataformas) }}</td>
+        <td>{{ v.fecha_lanzamiento }}</td>
+        <td class="text-end">
+          <a class="btn btn-sm btn-outline-secondary" [routerLink]="['/videojuegos', v.id]">Ver / editar</a>
+          <button class="btn btn-sm btn-outline-danger ms-2" (click)="eliminar(v)">Eliminar</button>
+        </td>
+      </tr>
+    } @empty {
+      <tr>
+        <td colspan="5" class="text-center text-muted">No se encontraron videojuegos.</td>
+      </tr>
+    }
+  </tbody>
+</table>

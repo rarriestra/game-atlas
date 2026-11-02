@@ -1,0 +1,84 @@
+<a routerLink="/videojuegos">&larr; Volver al listado</a> <!-- &larr; es el símbolo de flecha izquierda -->
+
+@if (mensaje) { <!-- si hay un mensaje muestra el mensaje en pantalla con los siguientes estilos -->
+  <div class="alert alert-danger mt-3">{{ mensaje }}</div> <!-- {{mensaje}} es un data binding de interpolación (muestra una variable en el template) -->
+}
+
+@if (videojuego) {
+  <div class="row mt-3">
+    <div class="col-md-4 mb-3"> <!-- col-md-4 indica que ocupa 4 de 12 columnas en pantallas medianas y grandes y mb-3 indica un margen inferior de 3 unidades -->
+      @if (videojuego.portada_url) {
+        <img [src]="videojuego.portada_url" [alt]="videojuego.titulo" class="img-fluid rounded">
+      } <!-- [src] y [alt] son data bindings de propiedad (asigna el valor a una propiedad del elemento) -->
+      <!-- etiquetas con los géneros (azul) y plataformas (gris) del juego -->
+      <div class="mt-2">
+        @for (g of videojuego.generos; track g.id) { <!-- track g.id es para que Angular pueda identificar cada elemento de la lista de géneros y dibujar los cambios de manera automática -->
+          <span class="badge text-bg-primary me-1">{{ g.nombre }}</span>
+        }
+        @for (p of videojuego.plataformas; track p.id) {
+          <span class="badge text-bg-secondary me-1">{{ p.nombre }}</span>
+        }
+      </div>
+    </div>
+    <div class="col-md-8">
+      <form #f="ngForm" (ngSubmit)="actualizar()"> <!-- #f="ngForm" guarda el estado del formulario. (ngSubmit) indica que al enviar el formulario se ejecute la función actualizar() del componente -->
+        <div class="mb-3">
+          <label class="form-label" for="titulo">Título *</label>
+          <!-- #titulo guarda el estado del campo; is-invalid lo pinta en rojo si quedó vacío -->
+          <input id="titulo" name="titulo" class="form-control" required maxlength="200"
+                 [(ngModel)]="videojuego.titulo"
+                 #titulo="ngModel"
+                 [ngClass]="{ 'is-invalid': titulo.invalid && titulo.touched }">
+          <div class="invalid-feedback">El título es obligatorio.</div>
+        </div>
+        <div class="mb-3">
+          <label class="form-label" for="sinopsis">Sinopsis</label>
+          <textarea id="sinopsis" name="sinopsis" class="form-control" rows="4"
+                    [(ngModel)]="videojuego.sinopsis"></textarea>
+        </div>
+        <div class="mb-3">
+          <label class="form-label" for="portada">URL de la portada</label>
+          <input id="portada" name="portada_url" type="url" class="form-control"
+                 [(ngModel)]="videojuego.portada_url">
+        </div>
+        <div class="row">
+          <div class="col-md-4 mb-3">
+            <label class="form-label" for="fecha">Lanzamiento</label>
+            <input id="fecha" name="fecha_lanzamiento" type="date" class="form-control"
+                   [(ngModel)]="videojuego.fecha_lanzamiento">
+          </div>
+          <div class="col-md-4 mb-3">
+            <label class="form-label" for="desarrollador">Desarrollador</label>
+            <input id="desarrollador" name="desarrollador" class="form-control" maxlength="100"
+                   [(ngModel)]="videojuego.desarrollador">
+          </div>
+          <div class="col-md-4 mb-3">
+            <label class="form-label" for="distribuidor">Distribuidor</label>
+            <input id="distribuidor" name="distribuidor" class="form-control" maxlength="100"
+                   [(ngModel)]="videojuego.distribuidor">
+          </div>
+        </div>
+        <div class="mb-3">
+          <label class="form-label d-block">Géneros</label>
+          <!-- chips: btn-check oculta la casilla y el label se ve como botón (relleno si está tildado) -->
+          @for (g of generos; track g.id) {
+            <input class="btn-check" type="checkbox" [id]="'genero-' + g.id"
+                   [checked]="tieneGenero(g)" (change)="alternarGenero(g)">
+            <label class="btn btn-sm btn-outline-primary rounded-pill me-1 mb-1" [for]="'genero-' + g.id">{{ g.nombre }}</label>
+          }
+        </div>
+        <div class="mb-3">
+          <label class="form-label d-block">Plataformas</label>
+          <!-- igual que géneros -->
+          @for (p of plataformas; track p.id) {
+            <input class="btn-check" type="checkbox" [id]="'plataforma-' + p.id"
+                   [checked]="tienePlataforma(p)" (change)="alternarPlataforma(p)">
+            <label class="btn btn-sm btn-outline-secondary rounded-pill me-1 mb-1" [for]="'plataforma-' + p.id">{{ p.nombre }}</label>
+          }
+        </div>
+        <button type="submit" class="btn btn-primary" [disabled]="f.invalid">Guardar cambios</button>
+        <button type="button" class="btn btn-outline-danger ms-2" (click)="eliminar()">Eliminar</button>
+      </form>
+    </div>
+  </div>
+}
