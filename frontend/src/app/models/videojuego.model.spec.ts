@@ -1,4 +1,4 @@
-import { Videojuego } from './videojuegomodel';
+import { Videojuego } from './videojuego.model';
 
 describe('Videojuego', () => {
   it('should create an instance', () => {

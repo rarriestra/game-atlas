@@ -1,15 +1,11 @@
-<a routerLink="/videojuegos">&larr; Volver al listado</a> 
-
-@if (mensaje) {
-  <div class="alert alert-info mt-3">{{ mensaje }}</div>
-}
+<a routerLink="/videojuegos">&larr; Volver al listado</a> <!-- &larr; es el símbolo de flecha izquierda -->
 
 @if (videojuego) {
   <div class="row mt-3">
-    <div class="col-md-4 mb-3">
+    <div class="col-md-4 mb-3"> <!-- col-md-4 indica que ocupa 4 de 12 columnas en pantallas medianas y grandes y mb-3 indica un margen inferior de 3 unidades -->
       @if (videojuego.portada_url) {
         <img [src]="videojuego.portada_url" [alt]="videojuego.titulo" class="img-fluid rounded">
-      }
+      } <!-- [src] y [alt] son data bindings de propiedad (asigna el valor a una propiedad del elemento) -->
     </div>
     <div class="col-md-8">
       <form #f="ngForm" (ngSubmit)="actualizar()">
@@ -50,4 +46,8 @@
       </form>
     </div>
   </div>
+}
+
+@if (mensaje) { <!-- si hay un mensaje muestra el mensaje en pantalla con los siguientes estilos -->
+  <div class="alert alert-info mt-3">{{ mensaje }}</div> <!-- {{mensaje}} es un data binding de interpolación (muestra una variable en el template) --> 
 }

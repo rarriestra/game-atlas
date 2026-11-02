@@ -2,7 +2,7 @@ import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms'; // Importa FormsModule para usar ngModel en el formulario
 import { Router, RouterLink } from '@angular/router';
 import { Videojuego } from '../../models/videojuego.model';
-import { VideojuegoService } from '../../service/videojuego-service';
+import { VideojuegoService } from '../../services/videojuego-service';
 
 @Component({
   selector: 'app-videojuego-add',
