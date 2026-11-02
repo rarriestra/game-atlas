@@ -12,6 +12,6 @@ export const appConfig: ApplicationConfig = {
     provideHttpClient(),
     provideZoneChangeDetection(),
     provideAnimations(), // activa las animaciones para que ngx-toastr funcione correctamente 
-    provideToastr({timeOut: 3000, positionClass: 'toast-bottom-right'}) // Configura los mensajes duran 3 segundos y salen abajo derecha
+    provideToastr({timeOut: 7500, positionClass: 'toast-bottom-right'}) // Configura los mensajes duran 3 segundos y salen abajo derecha
   ]
 };

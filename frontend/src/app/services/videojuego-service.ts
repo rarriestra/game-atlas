@@ -49,11 +49,32 @@ export class VideojuegoService {
   // private = solo se usa dentro de este servicio
   private paraEnviar(videojuego: Videojuego) {
     // Separa generos y plataformas (objetos) del resto de los campos (datos)
-    const { generos, plataformas, ...datos } = videojuego;
-    return {
+    const { generos, plataformas, ...datos } = videojuego; // ...datos son las propiedades restantes (titulo, sinopsis, fecha, etc.)
+    return { // esto es lo que se manda a la API de Django
       ...datos,                                     // titulo, sinopsis, fecha, etc.
       generos_ids: generos.map(g => g.id),          // [{id:1, nombre:'RPG'}] → [1]
       plataformas_ids: plataformas.map(p => p.id)   // [{id:2, nombre:'PC'}] → [2]
     };
   }
 }
+
+/*
+VIDEOJUEGO EN ANGULAR  
+videojuego = {
+  titulo 
+  sinopsis
+  generos: [{id:1, nombre:'RPG'}]
+  plataformas: [{id:2, nombre:'PC'}, {id:3, nombre:'PS5'},  {id:4, nombre:'Switch'},  {id:5, nombre:'Xbox'}]
+}
+
+y DJANGO ESPERA RECIBIR
+videojuego = {
+  titulo 
+  sinopsis
+  generos_ids: [1]
+  plataformas_ids: [2,3,4,5]
+} 
+Los campos se llaman generos_ids y plataformas_ids, no generos y plataformas.
+Llevan solo los números (ids), no los objetos completos.
+
+*/  
