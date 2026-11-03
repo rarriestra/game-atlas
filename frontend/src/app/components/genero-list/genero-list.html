@@ -1,0 +1,72 @@
+<h2 class="mb-3">Géneros</h2>
+
+@if (mensaje) {
+  <div class="alert alert-danger">{{ mensaje }}</div>
+}
+
+<!-- Este formulario solo sirve para agregar: la edición se hace en la fila -->
+<form #f="ngForm" class="row g-2 mb-4" (ngSubmit)="agregar()">
+  <div class="col-md-6">
+    <!-- maxlength 50 porque en models.py nombre es CharField(max_length=50) -->
+    <input class="form-control" name="nombre" placeholder="Nombre del género" required maxlength="50"
+           [(ngModel)]="genero.nombre">
+  </div>
+  <div class="col-md-6 d-flex gap-2">
+    <!-- Se deshabilita mientras se guarda para que varios clics no creen varios géneros -->
+    <button type="submit" class="btn btn-primary" [disabled]="f.invalid || guardando">Agregar</button>
+  </div>
+</form>
+
+<!-- Este botón solo aparece si hay filas tildadas -->
+@if (seleccionados.size > 0) {
+  <div class="mb-2">
+    <button class="btn btn-sm btn-danger" [disabled]="eliminando" (click)="eliminarSeleccionados()">
+      Eliminar seleccionados ({{ seleccionados.size }})
+    </button>
+  </div>
+}
+
+<table class="table table-striped align-middle">
+  <thead>
+    <tr>
+      <th>
+        <input class="form-check-input" type="checkbox" aria-label="Seleccionar todos"
+               [checked]="todosSeleccionados" (change)="alternarTodos()">
+      </th>
+      <th>Nombre</th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    @for (g of generos; track g.id) {
+      <!-- La fila que se está editando se pinta de amarillo -->
+      <tr [ngClass]="{ 'table-warning': g.id === editandoId }">
+        <td>
+          <input class="form-check-input" type="checkbox" [attr.aria-label]="'Seleccionar ' + g.nombre"
+                 [checked]="seleccionados.has(g.id!)" (change)="alternarSeleccion(g.id!)">
+        </td>
+        @if (g.id === editandoId) {
+          <td>
+            <!-- Enter guarda y Escape cancela -->
+            <input #campoEdicion class="form-control form-control-sm" aria-label="Nombre del género" maxlength="50"
+                   [(ngModel)]="nombreEditado" (keyup.enter)="guardarEdicion()" (keyup.escape)="cancelar()">
+          </td>
+          <td class="text-end">
+            <button class="btn btn-sm btn-primary" [disabled]="!nombreEditado.trim() || guardando" (click)="guardarEdicion()">Guardar</button>
+            <button class="btn btn-sm btn-outline-secondary ms-2" (click)="cancelar()">Cancelar</button>
+          </td>
+        } @else {
+          <td>{{ g.nombre }}</td>
+          <td class="text-end">
+            <button class="btn btn-sm btn-outline-secondary" (click)="editar(g)">Editar</button>
+            <button class="btn btn-sm btn-outline-danger ms-2" (click)="eliminar(g)">Eliminar</button>
+          </td>
+        }
+      </tr>
+    } @empty {
+      <tr>
+        <td colspan="3" class="text-center text-muted">No hay géneros cargados.</td>
+      </tr>
+    }
+  </tbody>
+</table>
