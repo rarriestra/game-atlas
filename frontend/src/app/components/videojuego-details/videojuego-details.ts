@@ -10,6 +10,7 @@ import { Videojuego } from '../../models/videojuego.model';
 import { GeneroService } from '../../services/genero-service';         
 import { PlataformaService } from '../../services/plataforma-service'; 
 import { VideojuegoService } from '../../services/videojuego-service';
+import { SesionService } from '../../services/sesion-service';
 
 @Component({
   selector: 'app-videojuego-details',
@@ -29,7 +30,8 @@ export class VideojuegoDetails implements OnInit { // implements OnInit provee e
     private readonly videojuegoService: VideojuegoService,
     private readonly generoService: GeneroService,         
     private readonly plataformaService: PlataformaService, 
-    private readonly toastr: ToastrService                 
+    private readonly toastr: ToastrService,
+    readonly sesion: SesionService   // NUEVO
   ) {}
 
   ngOnInit(): void {

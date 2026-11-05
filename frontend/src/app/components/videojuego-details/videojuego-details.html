@@ -21,6 +21,7 @@
       </div>
     </div>
     <div class="col-md-8">
+      @if (sesion.esAdmin) {
       <form #f="ngForm" (ngSubmit)="actualizar()"> <!-- #f="ngForm" guarda el estado del formulario. (ngSubmit) indica que al enviar el formulario se ejecute la función actualizar() del componente -->
         <div class="mb-3">
           <label class="form-label" for="titulo">Título *</label>
@@ -79,6 +80,19 @@
         <button type="submit" class="btn btn-primary" [disabled]="f.invalid">Guardar cambios</button>
         <button type="button" class="btn btn-outline-danger ms-2" (click)="eliminar()">Eliminar</button>
       </form>
+      } @else {
+        <!-- Ficha de solo lectura -->
+        <h2>{{ videojuego.titulo }}</h2>
+        <p>{{ videojuego.sinopsis || 'Sin sinopsis.' }}</p>
+        <dl class="row">
+          <dt class="col-sm-4">Lanzamiento</dt>
+          <dd class="col-sm-8">{{ videojuego.fecha_lanzamiento || 'Sin fecha' }}</dd>
+          <dt class="col-sm-4">Desarrollador</dt>
+          <dd class="col-sm-8">{{ videojuego.desarrollador || '-' }}</dd>
+          <dt class="col-sm-4">Distribuidor</dt>
+          <dd class="col-sm-8">{{ videojuego.distribuidor || '-' }}</dd>
+        </dl>
+      }
     </div>
   </div>
 }

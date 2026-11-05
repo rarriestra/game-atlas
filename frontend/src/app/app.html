@@ -1,10 +1,27 @@
 <nav class="navbar navbar-expand navbar-dark bg-dark mb-4">
   <div class="container">
     <a class="navbar-brand" routerLink="/">Game Atlas</a>
-    <div class="navbar-nav"> 
+    <div class="navbar-nav">
       <a class="nav-link" routerLink="/videojuegos" routerLinkActive="active">Videojuegos</a>
-      <a class="nav-link" routerLink="/generos" routerLinkActive="active">Géneros</a>
-      <a class="nav-link" routerLink="/plataformas" routerLinkActive="active">Plataformas</a>
+      @if (sesion.esAdmin) {
+        <a class="nav-link" routerLink="/generos" routerLinkActive="active">Géneros</a>
+        <a class="nav-link" routerLink="/plataformas" routerLinkActive="active">Plataformas</a>
+      }
+    </div>
+
+    <!-- NUEVO: selector de usuario. ms-auto lo empuja a la derecha -->
+    <div class="ms-auto d-flex align-items-center gap-2">
+      <label class="text-light small mb-0" for="usuario">Usuario:</label>
+      <!-- [ngModel] muestra el elegido; (ngModelChange) avisa cuando cambia.
+           Están separados porque al cambiar no guardamos solo el id: buscamos el usuario completo -->
+      <select id="usuario" class="form-select form-select-sm" style="width: 180px"
+              [ngModel]="sesion.usuarioActual?.id ?? null" (ngModelChange)="cambiarUsuario($event)">
+        <!-- null = sin usuario: es lo que hace que esta opción aparezca elegida por defecto -->
+        <option [ngValue]="null">Visitante (sin usuario)</option>
+        @for (u of usuarios; track u.id) {
+          <option [ngValue]="u.id">{{ u.username }}{{ u.is_staff ? ' (admin)' : '' }}</option>
+        }
+      </select>
     </div>
   </div>
 </nav>
