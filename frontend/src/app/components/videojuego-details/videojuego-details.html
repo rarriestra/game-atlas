@@ -32,6 +32,8 @@
       </p>
       <!-- NUEVO (CU04 y CU05): panel para agregar a la biblioteca, cambiar estado y calificar -->
       <app-biblioteca-panel [videojuegoId]="videojuego.id!" (cambio)="actualizarPromedio()" />
+      <!-- NUEVO (Guía 11): agregar el juego a mis listas (RF04 y CU10) -->
+      <app-listas-panel [videojuegoId]="videojuego.id!" />
     </div>
     <div class="col-md-8">
       @if (sesion.esAdmin) {

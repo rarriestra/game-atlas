@@ -1,0 +1,28 @@
+<div class="card mt-3">
+  <div class="card-body">
+    <h5 class="card-title">Mis listas</h5>
+
+    @if (!sesion.usuarioActual) {
+      <p class="text-muted small mb-0">Elegí un usuario arriba a la derecha para agregar este juego a tus listas.</p>
+    } @else {
+      <!-- Un chip por lista: relleno = el juego está en esa lista. Mismo truco que los géneros (btn-check) -->
+      <div class="mb-2">
+        @for (l of listas; track l.id) {
+          <input class="btn-check" type="checkbox" [id]="'lista-' + l.id"
+                 [checked]="contiene(l)" (change)="alternar(l)">
+          <label class="btn btn-sm btn-outline-success rounded-pill me-1 mb-1" [for]="'lista-' + l.id">{{ l.nombre }}</label>
+        } @empty {
+          <p class="text-muted small mb-0">Todavía no tenés listas.</p>
+        }
+      </div>
+
+      <!-- CU09 desde la ficha: crea la lista con este juego adentro -->
+      <form class="d-flex gap-2" (ngSubmit)="crear()">
+        <input class="form-control form-control-sm" name="nombreNueva" placeholder="Nueva lista" maxlength="100"
+               [(ngModel)]="nombreNueva">
+        <button type="submit" class="btn btn-sm btn-outline-primary text-nowrap" [disabled]="!nombreNueva.trim()">Crear</button>
+      </form>
+      <a class="small d-inline-block mt-2" [routerLink]="['/usuarios', sesion.usuarioActual.id]">Ver todas mis listas</a>
+    }
+  </div>
+</div>

@@ -1,7 +1,8 @@
 from django.contrib import admin
-from .models import BibliotecaItem, LikeResena, Resena, RespuestaResena
+from .models import BibliotecaItem, LikeResena, Lista, Resena, RespuestaResena
 
 admin.site.register(BibliotecaItem)
 admin.site.register(Resena)
 admin.site.register(LikeResena)
 admin.site.register(RespuestaResena)
+admin.site.register(Lista)   # NUEVO (Guía 11)

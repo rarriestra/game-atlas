@@ -2,7 +2,7 @@ from django.contrib.auth.models import User
 from django.test import TestCase
 
 from catalogo_videojuegos.models import Genero, Idioma, Videojuego
-from .models import BibliotecaItem, Resena
+from .models import BibliotecaItem, Lista, Resena
 
 
 class BibliotecaApiTests(TestCase):
@@ -201,3 +201,62 @@ class FiltrosBibliotecaTests(TestCase):
         BibliotecaItem.objects.filter(usuario=self.ana, videojuego=self.alfa).update(puntaje=8)
         self.assertEqual(self.titulos('ordenar=mi_puntaje:desc,titulo:desc'), ['Bravo', 'alfa', 'Charlie'])
         self.assertEqual(self.titulos('ordenar=cualquiera:asc'), self.titulos(''))
+
+
+class ListaTests(TestCase):
+    def setUp(self):
+        self.ana = User.objects.create(username='ana')
+        self.beto = User.objects.create(username='beto')
+        self.hades = Videojuego.objects.create(titulo='Hades')
+        self.celeste = Videojuego.objects.create(titulo='Celeste')
+
+    def crear(self, usuario, nombre, juegos=()):
+        datos = {'usuario': usuario.id, 'nombre': nombre, 'descripcion': 'Para jugar de a poco',
+                 'videojuegos_ids': [j.id for j in juegos]}
+        return self.client.post('/api/listas/', datos, content_type='application/json')
+
+    def test_crear_lista_con_juegos(self):
+        r = self.crear(self.ana, 'Indies', [self.hades, self.celeste])
+        self.assertEqual(r.status_code, 201)
+        titulos = {v['titulo'] for v in r.json()['data']['videojuegos']}
+        self.assertEqual(titulos, {'Hades', 'Celeste'})
+
+    def test_nombre_repetido_solo_para_el_mismo_usuario(self):
+        self.crear(self.ana, 'Indies')
+        r = self.crear(self.ana, 'indies')   # mismo nombre con otra mayúscula
+        self.assertEqual(r.status_code, 400)
+        self.assertIn('nombre', r.json()['data'])
+        self.assertEqual(self.crear(self.beto, 'Indies').status_code, 201)   # otro usuario sí puede
+
+    def test_nombre_vacio(self):
+        self.assertEqual(self.crear(self.ana, '   ').status_code, 400)
+
+    def test_editar_nombre_y_juegos(self):
+        id = self.crear(self.ana, 'Indies', [self.hades]).json()['data']['id']
+        r = self.client.patch(f'/api/listas/{id}/', {'nombre': 'Favoritos', 'videojuegos_ids': [self.celeste.id]},
+                              content_type='application/json')
+        self.assertEqual(r.status_code, 200)
+        self.assertEqual(r.json()['data']['nombre'], 'Favoritos')
+        self.assertEqual([v['titulo'] for v in r.json()['data']['videojuegos']], ['Celeste'])
+        # Guardar sin cambiar el nombre no choca consigo misma
+        r = self.client.patch(f'/api/listas/{id}/', {'nombre': 'Favoritos', 'descripcion': 'Otra'},
+                              content_type='application/json')
+        self.assertEqual(r.status_code, 200)
+
+    def test_agregar_y_quitar_juego(self):
+        id = self.crear(self.ana, 'Indies').json()['data']['id']
+        url = f'/api/listas/{id}/videojuegos/'
+        r = self.client.post(url, {'videojuego': self.hades.id}, content_type='application/json').json()['data']
+        self.assertEqual((r['en_lista'], r['cantidad']), (True, 1))
+        r = self.client.post(url, {'videojuego': self.hades.id}, content_type='application/json').json()['data']
+        self.assertEqual((r['en_lista'], r['cantidad']), (False, 0))
+
+    def test_listas_de_un_usuario_y_eliminar(self):
+        self.crear(self.ana, 'Indies')
+        id = self.crear(self.ana, 'Pendientes 2026').json()['data']['id']
+        self.crear(self.beto, 'De beto')
+        nombres = [l['nombre'] for l in self.client.get(f'/api/listas/?usuario={self.ana.id}').json()['data']]
+        self.assertEqual(sorted(nombres), ['Indies', 'Pendientes 2026'])
+        self.client.delete(f'/api/listas/{id}/')
+        self.assertFalse(Lista.objects.filter(id=id).exists())
+        self.assertTrue(Videojuego.objects.filter(id=self.hades.id).exists())   # los juegos no se borran

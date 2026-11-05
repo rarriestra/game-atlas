@@ -88,3 +88,25 @@ class RespuestaResena(models.Model):
 
     def __str__(self):
         return f'Respuesta de {self.usuario} a la reseña {self.resena_id}'
+
+
+class Lista(models.Model):
+    """Lista personal de juegos, agrupados con el criterio que quiera el usuario (CU09 a CU11)."""
+    usuario = models.ForeignKey(User, on_delete=models.CASCADE, related_name='listas')
+    nombre = models.CharField(max_length=100)
+    descripcion = models.TextField(blank=True)   # opcional
+    # ManyToManyField = "muchos a muchos": una lista tiene muchos juegos y un juego está en muchas listas.
+    # Django crea solo la tabla intermedia (biblioteca_lista_videojuegos), que es VIDEOJUEGO_LISTA del ER
+    videojuegos = models.ManyToManyField(Videojuego, blank=True, related_name='listas')
+    creada = models.DateTimeField(auto_now_add=True)
+    actualizada = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        # Un usuario no puede tener dos listas con el mismo nombre (otro usuario sí puede usarlo)
+        constraints = [
+            models.UniqueConstraint(fields=['usuario', 'nombre'], name='nombre_de_lista_unico'),
+        ]
+        ordering = ['-actualizada']   # la última que tocaste, primero
+
+    def __str__(self):
+        return f'{self.nombre} ({self.usuario})'

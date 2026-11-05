@@ -3,7 +3,7 @@ from django.db.models import Avg
 from rest_framework import serializers
 
 from catalogo_videojuegos.models import Videojuego
-from .models import BibliotecaItem, Resena, RespuestaResena
+from .models import BibliotecaItem, Lista, Resena, RespuestaResena
 
 
 class VideojuegoResumenSerializer(serializers.ModelSerializer):
@@ -125,4 +125,45 @@ class ResenaSerializer(serializers.ModelSerializer):
         # CU07: al editar solo cambia el texto (el autor y el juego quedan fijos)
         validated_data.pop('usuario', None)
         validated_data.pop('videojuego', None)
+        return super().update(instance, validated_data)
+
+
+class ListaSerializer(serializers.ModelSerializer):
+    """Lista personal (CU09 a CU11)."""
+    usuario = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
+    usuario_nombre = serializers.CharField(source='usuario.username', read_only=True)
+    # Para leer: los juegos con título y portada. Para escribir: solo los ids, en videojuegos_ids
+    videojuegos = VideojuegoResumenSerializer(many=True, read_only=True)
+    videojuegos_ids = serializers.PrimaryKeyRelatedField(
+        queryset=Videojuego.objects.all(), source='videojuegos', many=True, write_only=True, required=False
+    )
+
+    class Meta:
+        model = Lista
+        fields = ['id', 'usuario', 'usuario_nombre', 'nombre', 'descripcion',
+                  'videojuegos', 'videojuegos_ids', 'creada', 'actualizada']
+        read_only_fields = ['creada', 'actualizada']
+        # Se apaga el control automático del nombre repetido: lo hacemos en validate() con un mensaje en castellano
+        validators = []
+
+    def validate_nombre(self, valor):
+        valor = valor.strip()
+        if not valor:
+            raise serializers.ValidationError('La lista necesita un nombre.')
+        return valor
+
+    def validate(self, attrs):
+        # En un PATCH puede no venir el usuario: se toma el de la lista guardada
+        usuario = attrs.get('usuario', getattr(self.instance, 'usuario', None))
+        nombre = attrs.get('nombre')
+        if nombre:
+            repetida = Lista.objects.filter(usuario=usuario, nombre__iexact=nombre)  # iexact: sin importar mayúsculas
+            if self.instance:
+                repetida = repetida.exclude(id=self.instance.id)   # al editar, no se compara consigo misma
+            if repetida.exists():
+                raise serializers.ValidationError({'nombre': 'Ya tenés una lista con ese nombre.'})
+        return attrs
+
+    def update(self, instance, validated_data):
+        validated_data.pop('usuario', None)   # el dueño no se cambia
         return super().update(instance, validated_data)

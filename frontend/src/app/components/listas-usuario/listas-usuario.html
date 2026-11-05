@@ -1,0 +1,41 @@
+<div class="d-flex justify-content-between align-items-center mb-2">
+  <h4 class="mb-0">Listas ({{ listas.length }})</h4>
+  @if (esMiPerfil && !creando) {
+    <button type="button" class="btn btn-sm btn-outline-primary" (click)="creando = true">+ Nueva lista</button>
+  }
+</div>
+
+<!-- CU09: alta -->
+@if (creando) {
+  <form class="card card-body mb-3" (ngSubmit)="crear()">
+    <input class="form-control mb-2" name="nombre" placeholder="Nombre (por ejemplo: Indies para jugar de a dos)"
+           maxlength="100" required [(ngModel)]="nombre">
+    <textarea class="form-control mb-2" name="descripcion" rows="2" placeholder="Descripción (opcional)"
+              [(ngModel)]="descripcion"></textarea>
+    <div>
+      <button type="submit" class="btn btn-sm btn-primary" [disabled]="!nombre.trim()">Crear</button>
+      <button type="button" class="btn btn-sm btn-link" (click)="creando = false">Cancelar</button>
+    </div>
+  </form>
+}
+
+<div class="row row-cols-1 row-cols-md-3 g-3 mb-4">
+  @for (l of listas; track l.id) {
+    <div class="col">
+      <a class="card h-100 text-decoration-none" [routerLink]="['/listas', l.id]">
+        <!-- Las primeras 4 portadas, una al lado de la otra, como "tapa" de la lista -->
+        <div class="d-flex bg-light" style="height: 90px">
+          @for (v of l.videojuegos.slice(0, 4); track v.id) {
+            <img [src]="v.portada_url" [alt]="v.titulo" style="width: 25%; object-fit: cover">
+          }
+        </div>
+        <div class="card-body p-2">
+          <div class="fw-bold text-body">{{ l.nombre }}</div>
+          <div class="small text-muted">{{ l.videojuegos.length }} {{ l.videojuegos.length === 1 ? 'juego' : 'juegos' }}</div>
+        </div>
+      </a>
+    </div>
+  } @empty {
+    <p class="text-muted">{{ esMiPerfil ? 'Todavía no creaste listas.' : 'Todavía no tiene listas.' }}</p>
+  }
+</div>

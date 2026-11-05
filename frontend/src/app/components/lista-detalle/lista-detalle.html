@@ -1,0 +1,87 @@
+@if (mensaje) {
+  <div class="alert alert-danger mt-3">{{ mensaje }}</div>
+}
+
+@if (lista) {
+  @if (editando) {
+    <!-- CU10: modo edición -->
+    <form class="card card-body mb-4" (ngSubmit)="guardar()">
+      <label class="form-label" for="nombre">Nombre *</label>
+      <input id="nombre" name="nombre" class="form-control mb-2" maxlength="100" required [(ngModel)]="nombre">
+      <label class="form-label" for="descripcion">Descripción</label>
+      <textarea id="descripcion" name="descripcion" class="form-control mb-2" rows="2" [(ngModel)]="descripcion"></textarea>
+      <div>
+        <button type="submit" class="btn btn-sm btn-primary" [disabled]="!nombre.trim()">Guardar</button>
+        <button type="button" class="btn btn-sm btn-link" (click)="editando = false">Cancelar</button>
+      </div>
+    </form>
+  } @else {
+    <div class="d-flex justify-content-between align-items-start mb-3">
+      <div>
+        <h2 class="mb-0">{{ lista.nombre }}</h2>
+        <p class="text-muted mb-1">
+          Lista de <a [routerLink]="['/usuarios', lista.usuario]">{{ lista.usuario_nombre }}</a>
+          · {{ lista.videojuegos.length }} {{ lista.videojuegos.length === 1 ? 'juego' : 'juegos' }}
+        </p>
+        @if (lista.descripcion) {
+          <p style="white-space: pre-line">{{ lista.descripcion }}</p>
+        }
+      </div>
+      <!-- Editar y eliminar: solo el dueño -->
+      @if (esDueno) {
+        <div class="text-nowrap">
+          <button type="button" class="btn btn-sm btn-outline-secondary" (click)="editar()">Editar</button>
+          <button type="button" class="btn btn-sm btn-outline-danger ms-2" (click)="eliminar()">Eliminar</button>
+        </div>
+      }
+    </div>
+  }
+
+  <!-- Los juegos de la lista, en tarjetas como en el catálogo -->
+  <div class="row row-cols-2 row-cols-md-4 row-cols-lg-6 g-3 mb-4">
+    @for (v of lista.videojuegos; track v.id) {
+      <div class="col">
+        <div class="card h-100">
+          <a [routerLink]="['/videojuegos', v.id]">
+            @if (v.portada_url) {
+              <img [src]="v.portada_url" [alt]="v.titulo" class="card-img-top">
+            }
+          </a>
+          <div class="card-body p-2 d-flex justify-content-between align-items-start">
+            <a class="small fw-bold text-body text-decoration-none" [routerLink]="['/videojuegos', v.id]">{{ v.titulo }}</a>
+            @if (esDueno) {
+              <button type="button" class="btn-close btn-sm" title="Quitar de la lista" aria-label="Quitar"
+                      (click)="alternar(v)"></button>
+            }
+          </div>
+        </div>
+      </div>
+    } @empty {
+      <p class="text-muted">La lista está vacía.</p>
+    }
+  </div>
+
+  <!-- CU10: agregar juegos. Solo el dueño -->
+  @if (esDueno) {
+    <h5>Agregar juegos</h5>
+    <form class="d-flex gap-2 mb-3" style="max-width: 500px" (ngSubmit)="buscar()">
+      <input class="form-control" name="busqueda" placeholder="Buscar por título" [(ngModel)]="busqueda">
+      <button type="submit" class="btn btn-outline-primary">Buscar</button>
+    </form>
+    <div class="list-group mb-5" style="max-width: 500px">
+      @for (r of resultados; track r.id) {
+        <div class="list-group-item d-flex align-items-center gap-2">
+          @if (r.portada_url) {
+            <img [src]="r.portada_url" [alt]="r.titulo" class="rounded" style="width: 30px">
+          }
+          <span class="flex-grow-1">{{ r.titulo }}</span>
+          <button type="button" class="btn btn-sm"
+                  [class.btn-success]="contiene(r.id!)" [class.btn-outline-success]="!contiene(r.id!)"
+                  (click)="alternar(r)">
+            {{ contiene(r.id!) ? 'En la lista ✓' : 'Agregar' }}
+          </button>
+        </div>
+      }
+    </div>
+  }
+}

@@ -5,8 +5,9 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from .models import BibliotecaItem, LikeResena, Resena, RespuestaResena
-from .serializers import BibliotecaItemSerializer, ResenaSerializer, RespuestaResenaSerializer
+from catalogo_videojuegos.models import Videojuego
+from .models import BibliotecaItem, LikeResena, Lista, Resena, RespuestaResena
+from .serializers import BibliotecaItemSerializer, ListaSerializer, ResenaSerializer, RespuestaResenaSerializer
 
 
 def ordenar_biblioteca(result, ordenar):
@@ -184,3 +185,58 @@ class RespuestaView(APIView):
         respuesta = get_object_or_404(RespuestaResena, id=id)
         respuesta.delete()
         return Response({'status': 'success', 'data': 'Record Deleted'})
+
+
+class ListaView(APIView):
+    # CU09 a CU11: el ABM de listas personales
+    def get(self, request, *args, **kwargs):
+        id = kwargs.get('id', None)
+        # prefetch_related trae los juegos de todas las listas en UNA consulta más (para muchos a muchos)
+        result = Lista.objects.select_related('usuario').prefetch_related('videojuegos')
+        if id:
+            lista = get_object_or_404(result, id=id)
+            return Response({'status': 'success', 'data': ListaSerializer(lista).data})
+        usuario = request.query_params.get('usuario')   # las listas de un usuario (perfil y ficha)
+        if usuario:
+            result = result.filter(usuario_id=usuario)
+        serializer = ListaSerializer(result, many=True)
+        return Response({'status': 'success', 'data': serializer.data})
+
+    def post(self, request):
+        serializer = ListaSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({'status': 'success', 'data': serializer.data}, status=status.HTTP_201_CREATED)
+        return Response({'status': 'error', 'data': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+
+    def patch(self, request, id):
+        lista = get_object_or_404(Lista, id=id)
+        serializer = ListaSerializer(lista, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({'status': 'success', 'data': serializer.data})
+        return Response({'status': 'error', 'data': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, id):
+        lista = get_object_or_404(Lista, id=id)
+        lista.delete()   # borra la lista y sus filas de la tabla intermedia; los juegos quedan
+        return Response({'status': 'success', 'data': 'Record Deleted'})
+
+
+class ListaJuegoView(APIView):
+    # POST /api/listas/3/videojuegos/  con  {"videojuego": 5}
+    # Interruptor, como el like: si el juego no estaba lo agrega; si estaba, lo saca (CU10)
+    def post(self, request, id):
+        lista = get_object_or_404(Lista, id=id)
+        videojuego_id = request.data.get('videojuego')
+        if not videojuego_id:
+            return Response({'status': 'error', 'data': 'Falta el videojuego'}, status=status.HTTP_400_BAD_REQUEST)
+        videojuego = get_object_or_404(Videojuego, id=videojuego_id)
+        if lista.videojuegos.filter(id=videojuego.id).exists():
+            lista.videojuegos.remove(videojuego)   # borra la fila de la tabla intermedia
+            en_lista = False
+        else:
+            lista.videojuegos.add(videojuego)      # crea la fila en la tabla intermedia
+            en_lista = True
+        lista.save()   # actualiza "actualizada", así la lista sube al principio
+        return Response({'status': 'success', 'data': {'en_lista': en_lista, 'cantidad': lista.videojuegos.count()}})

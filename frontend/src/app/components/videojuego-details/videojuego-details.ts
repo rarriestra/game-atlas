@@ -14,10 +14,11 @@ import { SesionService } from '../../services/sesion-service';
 import { BibliotecaPanel } from '../biblioteca-panel/biblioteca-panel';
 import { ResenasJuego } from '../resenas-juego/resenas-juego';
 import { ForoJuego } from '../foro-juego/foro-juego';
+import { ListasPanel } from '../listas-panel/listas-panel';
 
 @Component({
   selector: 'app-videojuego-details',
-  imports: [FormsModule, NgClass, DecimalPipe, BibliotecaPanel, ResenasJuego, ForoJuego], // NgClass
+  imports: [FormsModule, NgClass, DecimalPipe, BibliotecaPanel, ResenasJuego, ForoJuego, ListasPanel], // NgClass
   templateUrl: './videojuego-details.html',
   styleUrl: './videojuego-details.css'
 })

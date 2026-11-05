@@ -8,10 +8,11 @@ import { BibliotecaService } from '../../services/biblioteca-service';
 import { ResenaService } from '../../services/resena-service';
 import { SesionService } from '../../services/sesion-service';
 import { UsuarioService } from '../../services/usuario-service';
+import { ListasUsuario } from '../listas-usuario/listas-usuario';
 
 @Component({
   selector: 'app-perfil',
-  imports: [RouterLink, DatePipe, DecimalPipe],
+  imports: [RouterLink, DatePipe, DecimalPipe, ListasUsuario],
   templateUrl: './perfil.html',
   styleUrl: './perfil.css'
 })

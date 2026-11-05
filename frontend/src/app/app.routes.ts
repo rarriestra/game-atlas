@@ -8,6 +8,7 @@ import { BibliotecaList } from './components/biblioteca-list/biblioteca-list';
 import { Inicio } from './components/inicio/inicio';
 import { Perfil } from './components/perfil/perfil';
 import { TopicoDetalleComponent } from './components/topico-detalle/topico-detalle';
+import { ListaDetalle } from './components/lista-detalle/lista-detalle';
 import { soloAdmin } from './guards/solo-admin';
 
 export const routes: Routes = [
@@ -20,4 +21,5 @@ export const routes: Routes = [
   { path: 'biblioteca', component: BibliotecaList },   // NUEVO
   { path: 'usuarios/:id', component: Perfil },          // NUEVO
   { path: 'topicos/:id', component: TopicoDetalleComponent },   // NUEVO (Guía 9)
+  { path: 'listas/:id', component: ListaDetalle },              // NUEVO (Guía 11)
 ];
