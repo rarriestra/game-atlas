@@ -28,31 +28,9 @@
   }
 </div>
 
-<!-- CU03: feed general de la comunidad -->
-<h4>Últimas reseñas</h4>
-@for (r of resenas; track r.id) {
-  <div class="card mb-2">
-    <div class="card-body">
-      <div class="d-flex justify-content-between">
-        <span>
-          <a class="fw-bold" [routerLink]="['/usuarios', r.usuario]">{{ r.usuario_nombre }}</a>
-          sobre
-          <a [routerLink]="['/videojuegos', r.videojuego.id]">{{ r.videojuego.titulo }}</a>
-        </span>
-        <span>
-          @if (r.puntaje) {
-            <span class="badge text-bg-warning">{{ r.puntaje }}/10</span>
-          }
-          <small class="text-muted ms-2">{{ r.creada | date: 'dd/MM/yyyy HH:mm' }}</small>
-        </span>
-      </div>
-      <!-- slice corta el texto a 200 caracteres; la reseña completa está en la ficha -->
-      <p class="mt-2 mb-0">{{ r.texto | slice: 0 : 200 }}{{ r.texto.length > 200 ? '…' : '' }}</p>
-    </div>
-  </div>
-} @empty {
-  <p class="text-muted">Todavía no hay reseñas.</p>
-}
+<!-- NUEVO (Guía 10): feed de actividad, CU03 (Todos) y CU21 (Seguidos).
+     Reemplaza a "Últimas reseñas": el feed ya incluye las reseñas -->
+<app-feed-actividad />
 
 <!-- NUEVO (Guía 9): actividad de los foros -->
 <h4 class="mt-5">Tópicos recientes</h4>

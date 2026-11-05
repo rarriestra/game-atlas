@@ -19,7 +19,6 @@ import { IdiomaService } from '../../services/idioma-service';
 const CAMPOS_ORDEN: { valor: string; texto: string; personal: boolean; direccion: DireccionOrden }[] = [
   { valor: 'titulo', texto: 'Nombre', personal: false, direccion: 'asc' },
   { valor: 'promedio', texto: 'Puntaje general', personal: false, direccion: 'desc' },
-  { valor: 'mi_puntaje', texto: 'Mi puntaje', personal: true, direccion: 'desc' },
   { valor: 'estado', texto: 'Estado', personal: true, direccion: 'asc' },
 ];
 
@@ -51,7 +50,7 @@ export class VideojuegoList implements OnInit, DoCheck {
   secundario = '';
   dirSecundario: DireccionOrden = 'asc';
   ordenAplicado: Orden[] = [];              // lo que se le pide a Django
-  private ordenCambiaConUsuario = false;    // true si el orden aplicado usa "Mi puntaje" o "Estado"
+  private ordenCambiaConUsuario = false;    // true si el orden aplicado usa "Estado"
 
   constructor(
     private readonly videojuegoService: VideojuegoService,
@@ -75,7 +74,7 @@ export class VideojuegoList implements OnInit, DoCheck {
       const primeraVez = this.usuarioCargado === null;   // la primera carga ya la hizo ngOnInit
       this.usuarioCargado = usuarioId;
       if (!usuarioId) this.sacarOrdenPersonal();          // el visitante no tiene puntaje ni estado propios
-      // "Mi puntaje" y "Estado" son de cada usuario: con otro usuario cambia el orden de la lista
+      // "Estado" es de cada usuario: con otro usuario cambia el orden de la lista
       if (!primeraVez && this.ordenCambiaConUsuario) {
         this.ordenCambiaConUsuario = false;
         this.pagina = 1;
@@ -129,7 +128,7 @@ export class VideojuegoList implements OnInit, DoCheck {
     return this.camposOrden.filter(c => c.valor !== this.primario);
   }
 
-  // El texto del botón, por ejemplo "Mi puntaje ↓, Nombre ↑"
+  // El texto del botón, por ejemplo "Puntaje general ↓, Nombre ↑"
   get resumenOrden(): string {
     if (!this.ordenAplicado.length) return 'Nombre ↑';
     return this.ordenAplicado
@@ -170,7 +169,7 @@ export class VideojuegoList implements OnInit, DoCheck {
     this.aplicarOrden();
   }
 
-  // Si queda como visitante, se sacan "Mi puntaje" y "Estado" (el secundario pasa a principal)
+  // Si queda como visitante, se saca "Estado" (el secundario pasa a principal)
   private sacarOrdenPersonal(): void {
     if (this.secundario && this.esPersonal(this.secundario)) this.secundario = '';
     if (this.primario && this.esPersonal(this.primario)) {

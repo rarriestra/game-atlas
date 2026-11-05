@@ -1,7 +1,7 @@
 from django.contrib.auth.models import User
 from django.test import TestCase
 
-from catalogo_videojuegos.models import Videojuego
+from catalogo_videojuegos.models import Genero, Idioma, Videojuego
 from .models import BibliotecaItem, Resena
 
 
@@ -152,3 +152,52 @@ class LikesYRespuestasTests(TestCase):
         self.client.post(f'/api/resenas/{otra.id}/like/', {'usuario': self.ana.id}, content_type='application/json')
         datos = self.client.get(f'/api/resenas/?videojuego={self.juego.id}&orden=votadas').json()['data']
         self.assertEqual(datos[0]['id'], otra.id)
+
+
+class FiltrosBibliotecaTests(TestCase):
+    def setUp(self):
+        self.ana = User.objects.create(username='ana')
+        self.beto = User.objects.create(username='beto')
+        self.rpg = Genero.objects.create(nombre='RPG')
+        self.espanol = Idioma.objects.create(nombre='Español')
+        self.alfa = Videojuego.objects.create(titulo='alfa')
+        self.bravo = Videojuego.objects.create(titulo='Bravo')
+        self.charlie = Videojuego.objects.create(titulo='Charlie')
+        self.alfa.generos.add(self.rpg)
+        self.bravo.idiomas.add(self.espanol)
+        BibliotecaItem.objects.create(usuario=self.ana, videojuego=self.alfa, estado='COMPLETADO', puntaje=5)
+        BibliotecaItem.objects.create(usuario=self.ana, videojuego=self.bravo, estado='JUGANDO', puntaje=8)
+        BibliotecaItem.objects.create(usuario=self.ana, videojuego=self.charlie, estado='PENDIENTE')
+        # Solo de beto: no tiene que cambiar los juegos de ana, pero sí el promedio de alfa
+        BibliotecaItem.objects.create(usuario=self.beto, videojuego=self.alfa, estado='COMPLETADO', puntaje=10)
+
+    def titulos(self, filtros):
+        r = self.client.get(f'/api/biblioteca/?usuario={self.ana.id}&{filtros}')
+        self.assertEqual(r.status_code, 200)
+        return [i['videojuego']['titulo'] for i in r.json()['data']]
+
+    def test_filtra_por_titulo_genero_e_idioma(self):
+        self.assertEqual(self.titulos('titulo=BRA'), ['Bravo'])
+        self.assertEqual(self.titulos(f'genero={self.rpg.id}'), ['alfa'])
+        self.assertEqual(self.titulos(f'idioma={self.espanol.id}'), ['Bravo'])
+
+    def test_ordena_por_nombre_sin_separar_mayusculas(self):
+        self.assertEqual(self.titulos('ordenar=titulo:asc'), ['alfa', 'Bravo', 'Charlie'])
+
+    def test_ordena_por_mi_puntaje_con_los_vacios_al_final(self):
+        self.assertEqual(self.titulos('ordenar=mi_puntaje:desc'), ['Bravo', 'alfa', 'Charlie'])
+        self.assertEqual(self.titulos('ordenar=mi_puntaje:asc'), ['alfa', 'Bravo', 'Charlie'])
+
+    def test_ordena_por_puntaje_general_de_todos_los_usuarios(self):
+        # alfa promedia 7.5 (5 de ana y 10 de beto); bravo, 8
+        self.assertEqual(self.titulos('ordenar=promedio:desc'), ['Bravo', 'alfa', 'Charlie'])
+        items = self.client.get(f'/api/biblioteca/?usuario={self.ana.id}&titulo=alfa').json()['data']
+        self.assertEqual(items[0]['puntaje_general'], 7.5)
+
+    def test_ordena_por_estado(self):
+        self.assertEqual(self.titulos('ordenar=estado:asc'), ['Bravo', 'alfa', 'Charlie'])
+
+    def test_criterio_secundario_desempata_y_campo_desconocido_se_ignora(self):
+        BibliotecaItem.objects.filter(usuario=self.ana, videojuego=self.alfa).update(puntaje=8)
+        self.assertEqual(self.titulos('ordenar=mi_puntaje:desc,titulo:desc'), ['Bravo', 'alfa', 'Charlie'])
+        self.assertEqual(self.titulos('ordenar=cualquiera:asc'), self.titulos(''))

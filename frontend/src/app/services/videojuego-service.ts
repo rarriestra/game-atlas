@@ -46,7 +46,7 @@ export class VideojuegoService {
     return this.http.delete(`${baseUrl}${id}/`);
   }
   // Pide una página del catálogo, con los mismos filtros que getAll
-  // orden: los criterios elegidos; usuario: de quién son "mi puntaje" y "estado"
+  // orden: los criterios elegidos; usuario: de quién es el "estado"
   getPagina(pagina: number, titulo = '', genero?: number, idioma?: number, orden: Orden[] = [], usuario?: number): Observable<Pagina<Videojuego>> {
     // 12 por página: se reparte justo en filas de 2, 4 o 6 tarjetas
     let params = new HttpParams().set('page', pagina).set('page_size', 12);
@@ -54,7 +54,7 @@ export class VideojuegoService {
     if (genero) params = params.set('genero', genero);
     if (idioma) params = params.set('idioma', idioma);
     if (orden.length) {
-      // → &ordenar=mi_puntaje:desc,titulo:asc
+      // → &ordenar=promedio:desc,titulo:asc
       params = params.set('ordenar', orden.map(o => `${o.campo}:${o.direccion}`).join(','));
     }
     if (usuario) params = params.set('usuario', usuario);

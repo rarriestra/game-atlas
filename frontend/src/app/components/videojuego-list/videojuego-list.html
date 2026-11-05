@@ -133,7 +133,7 @@
                 <span class="text-uppercase texto-estado">{{ estadoDe(v) }}</span>
               }
             </div>
-            <!-- Aparte del promedio general: así se entiende el orden por "Mi puntaje" -->
+            <!-- Aparte del promedio general: el puntaje que le puso el usuario elegido -->
             @if (sesion.usuarioActual) {
               <div class="small text-muted mt-1">Mi puntaje: {{ misPuntajes.get(v.id!) ?? '-' }}</div>
             }

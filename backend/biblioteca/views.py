@@ -1,4 +1,5 @@
-from django.db.models import Count
+from django.db.models import Avg, Case, Count, F, IntegerField, Value, When
+from django.db.models.functions import Lower
 from django.shortcuts import get_object_or_404
 from rest_framework import status
 from rest_framework.response import Response
@@ -6,6 +7,41 @@ from rest_framework.views import APIView
 
 from .models import BibliotecaItem, LikeResena, Resena, RespuestaResena
 from .serializers import BibliotecaItemSerializer, ResenaSerializer, RespuestaResenaSerializer
+
+
+def ordenar_biblioteca(result, ordenar):
+    """Ordena por hasta dos criterios, igual que el catálogo: ordenar='mi_puntaje:desc,titulo:asc'."""
+    criterios = []
+    for parte in ordenar.split(',')[:2]:
+        campo, _, direccion = parte.partition(':')
+        if campo == 'titulo':
+            columna = Lower('videojuego__titulo')
+        elif campo == 'promedio':
+            # El promedio de todos los usuarios, no solo del dueño de esta biblioteca
+            result = result.annotate(orden_promedio=Avg('videojuego__en_bibliotecas__puntaje'))
+            columna = F('orden_promedio')
+        elif campo == 'mi_puntaje':
+            columna = F('puntaje')
+        elif campo == 'estado':
+            # Orden lógico en vez de alfabético: lo que estás jugando primero
+            result = result.annotate(
+                orden_estado=Case(
+                    When(estado=BibliotecaItem.Estado.JUGANDO, then=Value(1)),
+                    When(estado=BibliotecaItem.Estado.COMPLETADO, then=Value(2)),
+                    When(estado=BibliotecaItem.Estado.PENDIENTE, then=Value(3)),
+                    When(estado=BibliotecaItem.Estado.ABANDONADO, then=Value(4)),
+                    output_field=IntegerField(),
+                )
+            )
+            columna = F('orden_estado')
+        else:
+            continue  # un campo que no conocemos se ignora
+        # nulls_last: los juegos sin dato van siempre al final, sea ascendente o descendente
+        criterios.append(columna.desc(nulls_last=True) if direccion == 'desc' else columna.asc(nulls_last=True))
+
+    if not criterios:
+        return result
+    return result.order_by(*criterios, 'videojuego__titulo', 'id')
 
 
 class BibliotecaView(APIView):
@@ -26,6 +62,19 @@ class BibliotecaView(APIView):
             result = result.filter(videojuego_id=videojuego)
         if estado:
             result = result.filter(estado=estado)
+        # Los mismos filtros que el catálogo (acá no se importa de IGDB: solo busca en la biblioteca)
+        titulo = request.query_params.get('titulo')
+        genero = request.query_params.get('genero')
+        idioma = request.query_params.get('idioma')
+        if titulo:
+            result = result.filter(videojuego__titulo__icontains=titulo)
+        if genero:
+            result = result.filter(videojuego__generos__id=genero)
+        if idioma:
+            result = result.filter(videojuego__idiomas__id=idioma)
+        ordenar = request.query_params.get('ordenar')
+        if ordenar:
+            result = ordenar_biblioteca(result, ordenar)
         serializer = BibliotecaItemSerializer(result, many=True)
         return Response({'status': 'success', 'data': serializer.data})
 

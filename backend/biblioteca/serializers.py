@@ -1,4 +1,5 @@
 from django.contrib.auth.models import User
+from django.db.models import Avg
 from rest_framework import serializers
 
 from catalogo_videojuegos.models import Videojuego
@@ -19,11 +20,16 @@ class BibliotecaItemSerializer(serializers.ModelSerializer):
         queryset=Videojuego.objects.all(), source='videojuego', write_only=True
     )
     usuario = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
+    # El promedio de todos los usuarios: se muestra en "Mi biblioteca" para entender ese orden
+    puntaje_general = serializers.SerializerMethodField()
 
     class Meta:
         model = BibliotecaItem
-        fields = ['id', 'usuario', 'videojuego', 'videojuego_id', 'estado', 'puntaje', 'actualizado']
+        fields = ['id', 'usuario', 'videojuego', 'videojuego_id', 'estado', 'puntaje', 'puntaje_general', 'actualizado']
         read_only_fields = ['actualizado']
+
+    def get_puntaje_general(self, obj):
+        return obj.videojuego.en_bibliotecas.aggregate(promedio=Avg('puntaje'))['promedio']  # None = nadie lo calificó
 
     def validate(self, attrs):
         """Regla del CU04/CU05: solo se califica si el estado es Jugando, Completado o Abandonado."""

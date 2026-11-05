@@ -26,5 +26,6 @@ export interface BibliotecaItem {
   videojuego: VideojuegoResumen;
   estado: Estado;
   puntaje: number | null;   // null = sin calificar
+  puntaje_general: number | null;   // promedio de todos los usuarios; null = nadie lo calificó
   actualizado: string;
 }

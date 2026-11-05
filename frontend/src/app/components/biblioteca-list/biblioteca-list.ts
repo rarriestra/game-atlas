@@ -1,30 +1,67 @@
-import { Component, DoCheck } from '@angular/core';
+import { Component, DoCheck, OnInit } from '@angular/core';
+import { DecimalPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { ToastrService } from 'ngx-toastr';
 import Swal from 'sweetalert2';
 import { BibliotecaItem, ESTADOS, ESTADOS_CALIFICABLES, Estado } from '../../models/biblioteca-item.model';
+import { Genero } from '../../models/genero.model';
+import { Idioma } from '../../models/idioma.model';
+import { DireccionOrden, Orden } from '../../models/videojuego.model';
 import { BibliotecaService } from '../../services/biblioteca-service';
+import { GeneroService } from '../../services/genero-service';
+import { IdiomaService } from '../../services/idioma-service';
 import { SesionService } from '../../services/sesion-service';
+
+// Por qué se puede ordenar. direccion = con cuál arranca al elegirlo
+const CAMPOS_ORDEN: { valor: string; texto: string; direccion: DireccionOrden }[] = [
+  { valor: 'titulo', texto: 'Nombre', direccion: 'asc' },
+  { valor: 'promedio', texto: 'Puntaje general', direccion: 'desc' },
+  { valor: 'mi_puntaje', texto: 'Mi puntaje', direccion: 'desc' },
+  { valor: 'estado', texto: 'Estado', direccion: 'asc' },
+];
 
 @Component({
   selector: 'app-biblioteca-list',
-  imports: [FormsModule, RouterLink],
+  imports: [FormsModule, RouterLink, DecimalPipe],
   templateUrl: './biblioteca-list.html',
   styleUrl: './biblioteca-list.css'
 })
-export class BibliotecaList implements DoCheck {
-  items: BibliotecaItem[] = [];               // toda la biblioteca del usuario
+export class BibliotecaList implements OnInit, DoCheck {
+  items: BibliotecaItem[] = [];               // la biblioteca del usuario, con los filtros aplicados
   filtro?: Estado;                            // pestaña elegida; undefined = Todos
   readonly estados = ESTADOS;
   readonly puntajes = [10, 9, 8, 7, 6, 5, 4, 3, 2, 1];
   private usuarioCargado: number | undefined | null = null;
 
+  // Filtros: los mismos que el catálogo
+  busqueda = '';
+  generos: Genero[] = [];
+  generoFiltro?: number;
+  idiomas: Idioma[] = [];
+  idiomaFiltro?: number;
+
+  // Panel de orden: lo que se está eligiendo. Recién cuenta al tocar Aplicar
+  panelOrden = false;
+  readonly camposOrden = CAMPOS_ORDEN;
+  primario = '';                            // '' = sin elegir
+  dirPrimario: DireccionOrden = 'asc';
+  secundario = '';
+  dirSecundario: DireccionOrden = 'asc';
+  ordenAplicado: Orden[] = [];              // lo que se le pide a Django
+
   constructor(
     private readonly bibliotecaService: BibliotecaService,
+    private readonly generoService: GeneroService,
+    private readonly idiomaService: IdiomaService,
     private readonly toastr: ToastrService,
     readonly sesion: SesionService
   ) {}
+
+  ngOnInit(): void {
+    this.generoService.getAll().subscribe(data => this.generos = data);
+    this.idiomaService.getAll().subscribe(data => this.idiomas = data);
+  }
 
   // Igual que en el panel: si cambian el usuario en la navbar, recarga
   ngDoCheck(): void {
@@ -39,10 +76,63 @@ export class BibliotecaList implements DoCheck {
     this.items = [];
     const usuarioId = this.sesion.usuarioActual?.id;
     if (!usuarioId) return;
-    this.bibliotecaService.getDeUsuario(usuarioId).subscribe({
+    this.bibliotecaService.getFiltrada(usuarioId, this.busqueda, this.generoFiltro, this.idiomaFiltro, this.ordenAplicado).subscribe({
       next: (data) => this.items = data,
       error: () => this.toastr.error('No se pudo cargar la biblioteca')
     });
+  }
+
+  limpiar(): void {
+    this.busqueda = '';
+    this.generoFiltro = undefined;
+    this.idiomaFiltro = undefined;
+    this.cargar();
+  }
+
+  // ---------- Orden ----------
+
+  // Las opciones del secundario: las mismas, menos la que ya se eligió como principal
+  get camposSecundarios() {
+    return CAMPOS_ORDEN.filter(c => c.valor !== this.primario);
+  }
+
+  // El texto del botón, por ejemplo "Mi puntaje ↓, Nombre ↑"
+  get resumenOrden(): string {
+    if (!this.ordenAplicado.length) return 'Últimos actualizados';
+    return this.ordenAplicado
+      .map(o => `${CAMPOS_ORDEN.find(c => c.valor === o.campo)?.texto} ${o.direccion === 'asc' ? '↑' : '↓'}`)
+      .join(', ');
+  }
+
+  private direccionInicial(campo: string): DireccionOrden {
+    return CAMPOS_ORDEN.find(c => c.valor === campo)?.direccion ?? 'asc';
+  }
+
+  cambiarPrimario(campo: string): void {
+    this.primario = campo;
+    this.dirPrimario = this.direccionInicial(campo);
+    // Sin principal no hay secundario, y los dos no pueden ser el mismo
+    if (!campo || this.secundario === campo) this.secundario = '';
+  }
+
+  cambiarSecundario(campo: string): void {
+    this.secundario = campo;
+    this.dirSecundario = this.direccionInicial(campo);
+  }
+
+  // Pasa lo elegido a ordenAplicado y vuelve a pedir la lista
+  aplicarOrden(): void {
+    this.ordenAplicado = [];
+    if (this.primario) this.ordenAplicado.push({ campo: this.primario, direccion: this.dirPrimario });
+    if (this.secundario) this.ordenAplicado.push({ campo: this.secundario, direccion: this.dirSecundario });
+    this.panelOrden = false;
+    this.cargar();
+  }
+
+  limpiarOrden(): void {
+    this.primario = '';
+    this.secundario = '';
+    this.aplicarOrden();
   }
 
   // Los items de la pestaña elegida

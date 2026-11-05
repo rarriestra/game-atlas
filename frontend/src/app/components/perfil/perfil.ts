@@ -1,11 +1,12 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, DoCheck, OnInit } from '@angular/core';
 import { DatePipe, DecimalPipe } from '@angular/common';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { BibliotecaItem, ESTADOS, Estado } from '../../models/biblioteca-item.model';
 import { Resena } from '../../models/resena.model';
-import { Usuario } from '../../models/usuario.model';
+import { PerfilUsuario, Usuario } from '../../models/usuario.model';
 import { BibliotecaService } from '../../services/biblioteca-service';
 import { ResenaService } from '../../services/resena-service';
+import { SesionService } from '../../services/sesion-service';
 import { UsuarioService } from '../../services/usuario-service';
 
 @Component({
@@ -14,18 +15,23 @@ import { UsuarioService } from '../../services/usuario-service';
   templateUrl: './perfil.html',
   styleUrl: './perfil.css'
 })
-export class Perfil implements OnInit {
-  usuario?: Usuario;
+export class Perfil implements OnInit, DoCheck {
+  usuario?: PerfilUsuario;   // NUEVO (Guía 10): con seguidores, siguiendo y lo_sigo
   biblioteca: BibliotecaItem[] = [];
   resenas: Resena[] = [];
   readonly estados = ESTADOS;
   mensaje = '';
+  mostrarLista?: 'seguidores' | 'siguiendo';   // NUEVO: qué lista se está viendo
+  lista: Usuario[] = [];                         // NUEVO
+  private id = 0;
+  private yoCargado?: number;
 
   constructor(
     private readonly route: ActivatedRoute,
     private readonly usuarioService: UsuarioService,
     private readonly bibliotecaService: BibliotecaService,
-    private readonly resenaService: ResenaService
+    private readonly resenaService: ResenaService,
+    readonly sesion: SesionService   // NUEVO: para saber quién mira (botón Seguir)
   ) {}
 
   ngOnInit(): void {
@@ -34,14 +40,55 @@ export class Perfil implements OnInit {
     this.route.paramMap.subscribe(params => this.cargar(Number(params.get('id'))));
   }
 
+  // NUEVO: si cambian el usuario de la navbar, hay que recalcular "lo sigo"
+  ngDoCheck(): void {
+    const yo = this.sesion.usuarioActual?.id;
+    if (this.id && yo !== this.yoCargado) {
+      this.cargarPerfil();
+    }
+  }
+
   cargar(id: number): void {
+    this.id = id;
     this.mensaje = '';
-    this.usuarioService.get(id).subscribe({
+    this.mostrarLista = undefined;
+    this.cargarPerfil();
+    this.bibliotecaService.getDeUsuario(id).subscribe(data => this.biblioteca = data);
+    this.resenaService.getDeUsuario(id).subscribe(data => this.resenas = data);
+  }
+
+  // NUEVO: el perfil con los contadores, desde el punto de vista de quien mira
+  cargarPerfil(): void {
+    this.yoCargado = this.sesion.usuarioActual?.id;
+    this.usuarioService.getPerfil(this.id, this.yoCargado).subscribe({
       next: (data) => this.usuario = data,
       error: () => this.mensaje = 'El usuario no existe.'
     });
-    this.bibliotecaService.getDeUsuario(id).subscribe(data => this.biblioteca = data);
-    this.resenaService.getDeUsuario(id).subscribe(data => this.resenas = data);
+  }
+
+  // CU19 / CU20
+  seguir(): void {
+    const yo = this.sesion.usuarioActual?.id;
+    if (!yo || !this.usuario) return;
+    this.usuarioService.toggleSeguir(this.id, yo).subscribe(res => {
+      if (!this.usuario) return;
+      this.usuario.lo_sigo = res.lo_sigo;
+      this.usuario.seguidores = res.seguidores;
+      // si la lista de seguidores está abierta, se vuelve a pedir para que aparezcas (o desaparezcas)
+      if (this.mostrarLista === 'seguidores') {
+        this.usuarioService.getLista(this.id, 'seguidores').subscribe(data => this.lista = data);
+      }
+    });
+  }
+
+  // Abre (o cierra, si ya estaba abierta) la lista de seguidores o de seguidos
+  verLista(tipo: 'seguidores' | 'siguiendo'): void {
+    if (this.mostrarLista === tipo) {
+      this.mostrarLista = undefined;
+      return;
+    }
+    this.mostrarLista = tipo;
+    this.usuarioService.getLista(this.id, tipo).subscribe(data => this.lista = data);
   }
 
   // Cuántos juegos tiene en cada estado

@@ -13,6 +13,40 @@
     <p class="text-muted">{{ usuario.first_name }} {{ usuario.last_name }}</p>
   }
 
+  <!-- NUEVO (Guía 10): seguidores, seguidos y botón Seguir (CU19 / CU20) -->
+  <div class="d-flex align-items-center gap-3 mb-3">
+    <button type="button" class="btn btn-link p-0 text-decoration-none" (click)="verLista('seguidores')">
+      <span class="fw-bold">{{ usuario.seguidores }}</span> seguidores
+    </button>
+    <button type="button" class="btn btn-link p-0 text-decoration-none" (click)="verLista('siguiendo')">
+      <span class="fw-bold">{{ usuario.siguiendo }}</span> siguiendo
+    </button>
+    <!-- No aparece en tu propio perfil ni como Visitante -->
+    @if (sesion.usuarioActual && sesion.usuarioActual.id !== usuario.id) {
+      <button type="button" class="btn btn-sm"
+              [class.btn-primary]="!usuario.lo_sigo" [class.btn-outline-secondary]="usuario.lo_sigo"
+              (click)="seguir()">
+        {{ usuario.lo_sigo ? 'Siguiendo ✓' : 'Seguir' }}
+      </button>
+    }
+  </div>
+
+  @if (mostrarLista) {
+    <div class="card card-body mb-4">
+      <div class="d-flex justify-content-between mb-2">
+        <span class="fw-bold">{{ mostrarLista === 'seguidores' ? 'Seguidores' : 'Siguiendo' }}</span>
+        <button type="button" class="btn-close" aria-label="Cerrar" (click)="mostrarLista = undefined"></button>
+      </div>
+      <div class="d-flex flex-wrap gap-2">
+        @for (u of lista; track u.id) {
+          <a class="badge rounded-pill text-bg-light border text-decoration-none" [routerLink]="['/usuarios', u.id]">{{ u.username }}</a>
+        } @empty {
+          <span class="text-muted small">Nadie todavía.</span>
+        }
+      </div>
+    </div>
+  }
+
   <!-- Estadísticas: una tarjeta por estado + el promedio -->
   <div class="row g-2 mb-4">
     @for (e of estados; track e.valor) {
