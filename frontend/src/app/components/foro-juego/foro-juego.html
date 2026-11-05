@@ -1,0 +1,38 @@
+<div class="d-flex justify-content-between align-items-center mt-4 mb-3">
+  <h4 class="mb-0">Foro ({{ topicos.length }})</h4>
+  @if (sesion.usuarioActual && !creando) {
+    <button type="button" class="btn btn-sm btn-primary" (click)="creando = true">Nuevo tópico</button>
+  }
+</div>
+
+<!-- CU13: formulario de nuevo tópico -->
+@if (creando) {
+  <form class="card card-body mb-3" (ngSubmit)="crear()">
+    <input class="form-control mb-2" name="titulo" placeholder="Título (por ejemplo: ¿Qué arma conviene al principio?)"
+           maxlength="150" [(ngModel)]="titulo">
+    <textarea class="form-control mb-2" name="texto" rows="4" placeholder="Contá tu duda o tu idea"
+              [(ngModel)]="texto"></textarea>
+    <div>
+      <button type="submit" class="btn btn-sm btn-primary"
+              [disabled]="titulo.trim().length < 5 || texto.trim().length < 10">Publicar</button>
+      <button type="button" class="btn btn-sm btn-link" (click)="creando = false">Cancelar</button>
+    </div>
+  </form>
+}
+
+<!-- CU12: lista de tópicos -->
+<div class="list-group">
+  @for (t of topicos; track t.id) {
+    <a class="list-group-item list-group-item-action" [routerLink]="['/topicos', t.id]">
+      <div class="d-flex justify-content-between">
+        <span class="fw-bold">{{ t.titulo }}</span>
+        <span class="badge text-bg-secondary align-self-center">{{ t.cantidad_comentarios }} comentarios</span>
+      </div>
+      <small class="text-muted">
+        por {{ t.usuario_nombre }} · última actividad {{ t.ultima_actividad | date: 'dd/MM/yyyy HH:mm' }}
+      </small>
+    </a>
+  } @empty {
+    <p class="text-muted">Todavía no hay tópicos. {{ sesion.usuarioActual ? '¡Abrí el primero!' : '' }}</p>
+  }
+</div>

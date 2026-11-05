@@ -7,12 +7,12 @@
 
 <!-- buscador. Al apretar Enter o "Buscar", (ngSubmit) llama a cargar() con los filtros -->
 <form class="row g-2 mb-3" (ngSubmit)="pagina = 1; cargar()">
-  <div class="col-md-6">
+  <div class="col-md-6 col-lg-4">
     <!-- Lo que escribís queda en la variable busqueda del .ts -->
     <input class="form-control" name="busqueda" placeholder="Buscar por título"
            [(ngModel)]="busqueda">
   </div>
-  <div class="col-md-3">
+  <div class="col-md-6 col-lg-3">
     <!-- Filtro por género: el elegido queda en generoFiltro -->
     <select class="form-select" name="genero" [(ngModel)]="generoFiltro">
       <!-- undefined = sin filtro (trae todos) -->
@@ -23,7 +23,16 @@
       }
     </select>
   </div>
-  <div class="col-md-3 d-flex gap-2">
+  <div class="col-md-6 col-lg-3">
+    <!-- Filtro por idioma: igual que el de género -->
+    <select class="form-select" name="idioma" [(ngModel)]="idiomaFiltro">
+      <option [ngValue]="undefined">Todos los idiomas</option>
+      @for (i of idiomas; track i.id) {
+        <option [ngValue]="i.id">{{ i.nombre }}</option>
+      }
+    </select>
+  </div>
+  <div class="col-md-6 col-lg-2 d-flex gap-2">
     <!-- type="submit" dispara el (ngSubmit) del form -->
     <button type="submit" class="btn btn-outline-primary">Buscar</button>
     <!-- type="button" para que NO envíe el form; limpiar() borra los filtros y recarga -->
@@ -35,45 +44,114 @@
   <div class="alert alert-danger">{{ mensaje }}</div>
 }
 
-<p class="text-muted">{{ total }} juegos</p>
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <p class="text-muted mb-0">{{ total }} juegos</p>
+  <!-- Abre o cierra el panel; en el botón se ve el orden que está aplicado -->
+  <button type="button" class="btn btn-sm btn-outline-secondary" (click)="panelOrden = !panelOrden">
+    Ordenar: {{ resumenOrden }}
+  </button>
+</div>
 
-<table class="table table-striped align-middle tabla-videojuegos">
-  <thead>
-    <tr>
-      <th>Título</th>
-      <th>Desarrollador</th>
-      <th>Géneros</th>
-      <th>Plataformas</th>
-      <th class="col-lanzamiento">Lanzamiento</th>
-      <th class="col-acciones"></th>
-    </tr>
-  </thead>
-  <tbody>
-    @for (v of videojuegos; track v.id) {  <!--Armamos la tabla de videojuegos con un bucle for que recorre la lista de videojuegos y genera las filas para cada uno. -->
-      <tr>
-        <!-- [title] muestra el texto completo al pasar el mouse, por si quedó cortado -->
-        <td [title]="v.titulo">{{ v.titulo }}</td>
-        <td [title]="v.desarrollador">{{ v.desarrollador }}</td>
-        <td [title]="nombres(v.generos)">{{ nombres(v.generos) }}</td>
-        <td [title]="nombres(v.plataformas)">{{ nombres(v.plataformas) }}</td>
-        <td>{{ v.fecha_lanzamiento }}</td>
-        <td class="text-end">
-          <!-- Todos pueden ver la ficha; el texto cambia según el rol -->
-          <a class="btn btn-sm btn-outline-secondary" [routerLink]="['/videojuegos', v.id]">
-            {{ sesion.esAdmin ? 'Ver / editar' : 'Ver' }}
-          </a>
-          @if (sesion.esAdmin) {
-            <button class="btn btn-sm btn-outline-danger ms-2" (click)="eliminar(v)">Eliminar</button>
+<!-- Panel de orden, como el de MyAnimeList: un criterio principal y uno secundario que desempata -->
+@if (panelOrden) {
+  <div class="card card-body mb-3">
+    <div class="row g-2 align-items-center mb-2">
+      <label class="col-sm-3 col-lg-2 col-form-label" for="orden-primario">Principal</label>
+      <div class="col-sm-5 col-lg-4">
+        <select id="orden-primario" class="form-select form-select-sm"
+                [ngModel]="primario" (ngModelChange)="cambiarPrimario($event)">
+          <option value="">-</option>
+          @for (c of camposOrden; track c.valor) {
+            <option [value]="c.valor">{{ c.texto }}</option>
           }
-        </td>
-      </tr>
-    } @empty {
-      <tr>
-        <td colspan="6" class="text-center text-muted">No se encontraron videojuegos.</td>
-      </tr>
-    }
-  </tbody>
-</table>
+        </select>
+      </div>
+      <div class="col-auto btn-group btn-group-sm">
+        <!-- [class.active] marca la dirección elegida; sin campo elegido, no se puede tocar -->
+        <button type="button" class="btn btn-outline-primary" [class.active]="dirPrimario === 'asc'"
+                [disabled]="!primario" (click)="dirPrimario = 'asc'">↑ Asc</button>
+        <button type="button" class="btn btn-outline-primary" [class.active]="dirPrimario === 'desc'"
+                [disabled]="!primario" (click)="dirPrimario = 'desc'">↓ Desc</button>
+      </div>
+    </div>
+    <div class="row g-2 align-items-center mb-3">
+      <label class="col-sm-3 col-lg-2 col-form-label" for="orden-secundario">Secundario</label>
+      <div class="col-sm-5 col-lg-4">
+        <select id="orden-secundario" class="form-select form-select-sm" [disabled]="!primario"
+                [ngModel]="secundario" (ngModelChange)="cambiarSecundario($event)">
+          <option value="">-</option>
+          @for (c of camposSecundarios; track c.valor) {
+            <option [value]="c.valor">{{ c.texto }}</option>
+          }
+        </select>
+      </div>
+      <div class="col-auto btn-group btn-group-sm">
+        <button type="button" class="btn btn-outline-primary" [class.active]="dirSecundario === 'asc'"
+                [disabled]="!secundario" (click)="dirSecundario = 'asc'">↑ Asc</button>
+        <button type="button" class="btn btn-outline-primary" [class.active]="dirSecundario === 'desc'"
+                [disabled]="!secundario" (click)="dirSecundario = 'desc'">↓ Desc</button>
+      </div>
+    </div>
+    <div class="d-flex gap-2">
+      <button type="button" class="btn btn-sm btn-primary" (click)="aplicarOrden()">Aplicar</button>
+      <button type="button" class="btn btn-sm btn-outline-secondary" (click)="limpiarOrden()">Limpiar</button>
+    </div>
+  </div>
+}
+
+<!-- row-cols: Bootstrap reparte las tarjetas en columnas (2 en celular, 4 en pantallas medianas, 6 en grandes) -->
+<div class="row row-cols-2 row-cols-md-4 row-cols-xl-6 g-3 mb-4">
+  @for (v of videojuegos; track v.id) {  <!--Armamos las tarjetas de videojuegos con un bucle for que recorre la lista de videojuegos y genera una para cada uno. -->
+    <div class="col">
+      <div class="card h-100 tarjeta-juego">
+        <!-- Todos pueden ver la ficha tocando la tarjeta -->
+        <a class="enlace-tarjeta" [routerLink]="['/videojuegos', v.id]">
+          <div class="portada">
+            @if (v.portada_url) {
+              <img [src]="v.portada_url" [alt]="v.titulo">
+            } @else {
+              <div class="sin-portada">Sin portada</div>
+            }
+            <!-- En la etiqueta va el primer género; al pasar el mouse se ven todos -->
+            @if (v.generos.length) {
+              <span class="badge text-bg-light etiqueta-genero" [title]="nombres(v.generos)">{{ v.generos[0].nombre }}</span>
+            }
+          </div>
+          <div class="card-body p-2 d-flex flex-column">
+            <!-- [title] muestra el texto completo al pasar el mouse, por si quedó cortado -->
+            <div class="fw-bold una-linea" [title]="v.titulo">{{ v.titulo }}</div>
+            <div class="small text-muted una-linea mb-2" [title]="v.desarrollador">{{ v.desarrollador || 'Desarrollador sin datos' }}</div>
+            <!-- mt-auto empuja esta fila abajo de todo, así queda alineada en todas las tarjetas -->
+            <div class="d-flex justify-content-between align-items-center small border-top pt-2 mt-auto">
+              @if (v.puntaje_promedio !== null) {
+                <span>&#9733; {{ v.puntaje_promedio | number: '1.2-2' }}</span>
+              } @else {
+                <span class="text-muted">Sin puntaje</span>
+              }
+              <!-- El estado es de la biblioteca del usuario elegido: el visitante no tiene -->
+              @if (sesion.usuarioActual) {
+                <span class="text-uppercase texto-estado">{{ estadoDe(v) }}</span>
+              }
+            </div>
+            <!-- Aparte del promedio general: así se entiende el orden por "Mi puntaje" -->
+            @if (sesion.usuarioActual) {
+              <div class="small text-muted mt-1">Mi puntaje: {{ misPuntajes.get(v.id!) ?? '-' }}</div>
+            }
+          </div>
+        </a>
+        <!-- Solo el administrador: va afuera del enlace, para que Eliminar no abra la ficha -->
+        @if (sesion.esAdmin) {
+          <div class="card-footer d-flex justify-content-between p-2">
+            <a class="btn btn-sm btn-outline-secondary" [routerLink]="['/videojuegos', v.id]">Editar</a>
+            <button class="btn btn-sm btn-outline-danger" (click)="eliminar(v)">Eliminar</button>
+          </div>
+        }
+      </div>
+    </div>
+  } @empty {
+    <p class="col-12 text-center text-muted">No se encontraron videojuegos.</p>
+  }
+</div>
 
 <!-- Solo aparece si hay más de una página -->
 @if (totalPaginas > 1) {
@@ -83,10 +161,15 @@
       <li class="page-item" [class.disabled]="pagina === 1">
         <button class="page-link" (click)="irA(pagina - 1)">Anterior</button>
       </li>
-      @for (p of paginas; track p) {
-        <li class="page-item" [class.active]="p === pagina">
-          <button class="page-link" (click)="irA(p)">{{ p }}</button>
-        </li>
+      <!-- track $index porque puede haber dos "…" (null) y track necesita algo que no se repita -->
+      @for (p of paginas; track $index) {
+        @if (p === null) {
+          <li class="page-item disabled"><span class="page-link">…</span></li>
+        } @else {
+          <li class="page-item" [class.active]="p === pagina">
+            <button class="page-link" (click)="irA(p)">{{ p }}</button>
+          </li>
+        }
       }
       <li class="page-item" [class.disabled]="pagina === totalPaginas">
         <button class="page-link" (click)="irA(pagina + 1)">Siguiente</button>

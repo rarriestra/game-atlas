@@ -1,0 +1,113 @@
+@if (mensaje) {
+  <div class="alert alert-danger">{{ mensaje }}</div>
+}
+
+@if (topico) {
+  <a [routerLink]="['/videojuegos', topico.videojuego.id]">&larr; Foro de {{ topico.videojuego.titulo }}</a>
+
+  <!-- El tópico -->
+  <div class="card mt-3 mb-4">
+    <div class="card-body">
+      @if (editandoTopico) {
+        <!-- CU14: editar tópico -->
+        <input class="form-control mb-2" name="tituloEdicion" maxlength="150" [(ngModel)]="tituloEdicion">
+        <textarea class="form-control mb-2" name="textoTopicoEdicion" rows="4" [(ngModel)]="textoTopicoEdicion"></textarea>
+        <button type="button" class="btn btn-sm btn-primary" (click)="guardarTopico()"
+                [disabled]="tituloEdicion.trim().length < 5 || textoTopicoEdicion.trim().length < 10">Guardar</button>
+        <button type="button" class="btn btn-sm btn-link" (click)="editandoTopico = false">Cancelar</button>
+      } @else {
+        <h3>{{ topico.titulo }}</h3>
+        <small class="text-muted">
+          por <a [routerLink]="['/usuarios', topico.usuario]">{{ topico.usuario_nombre }}</a>
+          · {{ topico.creado | date: 'dd/MM/yyyy HH:mm' }}
+        </small>
+        <p class="mt-3 mb-2" style="white-space: pre-line">{{ topico.texto }}</p>
+        @if (esMio(topico.usuario)) {
+          <button type="button" class="btn btn-sm btn-link px-0 me-2" (click)="editarTopico()">Editar</button>
+        }
+        @if (puedeBorrar(topico.usuario)) {
+          <button type="button" class="btn btn-sm btn-link text-danger px-0" (click)="eliminarTopico()">Eliminar tópico</button>
+        }
+      }
+    </div>
+  </div>
+
+  <h5>Comentarios ({{ topico.cantidad_comentarios }})</h5>
+
+  <!-- Comentarios principales -->
+  @for (c of topico.comentarios; track c.id) {
+    <div class="mb-3">
+      <a class="fw-bold" [routerLink]="['/usuarios', c.usuario]">{{ c.usuario_nombre }}</a>
+      <small class="text-muted ms-1">{{ c.creado | date: 'dd/MM/yyyy HH:mm' }}</small>
+
+      @if (editandoId === c.id) {
+        <textarea class="form-control my-1" name="edicion" rows="2" [(ngModel)]="textoEdicion"></textarea>
+        <button type="button" class="btn btn-sm btn-primary" (click)="guardarEdicion(c)"
+                [disabled]="textoEdicion.trim().length < 2">Guardar</button>
+        <button type="button" class="btn btn-sm btn-link" (click)="editandoId = undefined">Cancelar</button>
+      } @else {
+        <div style="white-space: pre-line">{{ c.texto }}</div>
+        @if (sesion.usuarioActual) {
+          <button type="button" class="btn btn-sm btn-link px-0 me-2" (click)="abrirRespuesta(c)">Responder</button>
+        }
+        @if (esMio(c.usuario)) {
+          <button type="button" class="btn btn-sm btn-link px-0 me-2" (click)="editar(c)">Editar</button>
+        }
+        @if (puedeBorrar(c.usuario)) {
+          <button type="button" class="btn btn-sm btn-link text-danger px-0" (click)="eliminarComentario(c.id)">Eliminar</button>
+        }
+      }
+
+      <!-- Respuestas: corridas a la derecha con una línea, para ver de qué comentario cuelgan -->
+      @if (c.respuestas.length || respondiendoA === c.id) {
+        <div class="border-start border-2 ps-3 ms-2 mt-1">
+          @for (r of c.respuestas; track r.id) {
+            <div class="mb-2">
+              <a class="fw-bold small" [routerLink]="['/usuarios', r.usuario]">{{ r.usuario_nombre }}</a>
+              <small class="text-muted ms-1">{{ r.creado | date: 'dd/MM/yyyy HH:mm' }}</small>
+              @if (editandoId === r.id) {
+                <textarea class="form-control my-1" name="edicionRespuesta" rows="2" [(ngModel)]="textoEdicion"></textarea>
+                <button type="button" class="btn btn-sm btn-primary" (click)="guardarEdicion(r)"
+                        [disabled]="textoEdicion.trim().length < 2">Guardar</button>
+                <button type="button" class="btn btn-sm btn-link" (click)="editandoId = undefined">Cancelar</button>
+              } @else {
+                <div class="small" style="white-space: pre-line">{{ r.texto }}</div>
+                @if (sesion.usuarioActual) {
+                  <button type="button" class="btn btn-sm btn-link px-0 me-2" (click)="abrirRespuesta(c, r)">Responder</button>
+                }
+                @if (esMio(r.usuario)) {
+                  <button type="button" class="btn btn-sm btn-link px-0 me-2" (click)="editar(r)">Editar</button>
+                }
+                @if (puedeBorrar(r.usuario)) {
+                  <button type="button" class="btn btn-sm btn-link text-danger px-0" (click)="eliminarComentario(r.id)">Eliminar</button>
+                }
+              }
+            </div>
+          }
+          @if (respondiendoA === c.id) {
+            <div class="d-flex gap-2">
+              <input class="form-control form-control-sm" name="respuesta" placeholder="Escribí tu respuesta"
+                     [(ngModel)]="textoRespuesta" (keyup.enter)="responder(c)">
+              <button type="button" class="btn btn-sm btn-primary" [disabled]="textoRespuesta.trim().length < 2"
+                      (click)="responder(c)">Enviar</button>
+              <button type="button" class="btn btn-sm btn-link" (click)="respondiendoA = undefined">Cancelar</button>
+            </div>
+          }
+        </div>
+      }
+    </div>
+  } @empty {
+    <p class="text-muted">Todavía no hay comentarios.</p>
+  }
+
+  <!-- CU16: nuevo comentario principal -->
+  @if (sesion.usuarioActual) {
+    <form class="mt-3" (ngSubmit)="comentar()">
+      <textarea class="form-control mb-2" name="comentario" rows="3" placeholder="Escribí un comentario"
+                [(ngModel)]="textoComentario"></textarea>
+      <button type="submit" class="btn btn-primary btn-sm" [disabled]="textoComentario.trim().length < 2">Comentar</button>
+    </form>
+  } @else {
+    <p class="text-muted small">Elegí un usuario arriba a la derecha para comentar.</p>
+  }
+}

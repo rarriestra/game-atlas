@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 // HttpParams arma los filtros de la URL (?titulo=...&genero=...)
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, map } from 'rxjs';
-import { ApiResponse, Videojuego , Pagina} from '../models/videojuego.model';
+import { ApiResponse, Videojuego , Pagina, Orden} from '../models/videojuego.model';
 
 
 const baseUrl = '/api/videojuegos/';
@@ -46,10 +46,18 @@ export class VideojuegoService {
     return this.http.delete(`${baseUrl}${id}/`);
   }
   // Pide una página del catálogo, con los mismos filtros que getAll
-  getPagina(pagina: number, titulo = '', genero?: number): Observable<Pagina<Videojuego>> {
-    let params = new HttpParams().set('page', pagina).set('page_size', 10);
+  // orden: los criterios elegidos; usuario: de quién son "mi puntaje" y "estado"
+  getPagina(pagina: number, titulo = '', genero?: number, idioma?: number, orden: Orden[] = [], usuario?: number): Observable<Pagina<Videojuego>> {
+    // 12 por página: se reparte justo en filas de 2, 4 o 6 tarjetas
+    let params = new HttpParams().set('page', pagina).set('page_size', 12);
     if (titulo) params = params.set('titulo', titulo);
     if (genero) params = params.set('genero', genero);
+    if (idioma) params = params.set('idioma', idioma);
+    if (orden.length) {
+      // → &ordenar=mi_puntaje:desc,titulo:asc
+      params = params.set('ordenar', orden.map(o => `${o.campo}:${o.direccion}`).join(','));
+    }
+    if (usuario) params = params.set('usuario', usuario);
     // Acá no usamos map: necesitamos data, count y pages, no solo data
     return this.http.get<Pagina<Videojuego>>(baseUrl, { params });
   }

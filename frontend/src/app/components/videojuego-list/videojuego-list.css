@@ -1,22 +1,66 @@
-/* Anchos fijos: las columnas no dependen del largo del texto */
-.tabla-videojuegos {
-  table-layout: fixed;
+/* Al pasar el mouse la tarjeta se levanta un poco, para que se note que se puede tocar */
+.tarjeta-juego {
+  overflow: hidden;
+  transition: transform 0.15s, box-shadow 0.15s;
 }
 
-/* Todo en una sola línea, así todas las filas miden lo mismo.
+.tarjeta-juego:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+}
+
+/* El enlace ocupa todo el alto libre, y el texto no se pinta de azul ni se subraya */
+.enlace-tarjeta {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  min-width: 0;
+  color: inherit;
+  text-decoration: none;
+}
+
+/* Medidas fijas: las tarjetas no dependen del tamaño de cada imagen */
+.portada {
+  position: relative;
+  aspect-ratio: 3 / 4;
+  background: #e9ecef;
+}
+
+/* cover: llena el espacio sin deformar la imagen */
+.portada img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.sin-portada {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: #6c757d;
+  font-size: 0.875rem;
+}
+
+/* Arriba a la izquierda, encima de la portada */
+.etiqueta-genero {
+  position: absolute;
+  top: 0.5rem;
+  left: 0.5rem;
+  max-width: calc(100% - 1rem);
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Todo en una sola línea, así todas las tarjetas miden lo mismo.
    Si el texto no entra, se corta con "..." */
-.tabla-videojuegos th,
-.tabla-videojuegos td {
+.una-linea {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-.col-lanzamiento {
-  width: 130px;
-}
-
-/* Tiene que alcanzar para los dos botones */
-.col-acciones {
-  width: 200px;
+.texto-estado {
+  font-size: 0.7rem;
 }

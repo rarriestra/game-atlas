@@ -14,6 +14,13 @@ class Plataforma(models.Model):
         return self.nombre
 
 
+class Idioma(models.Model):
+    nombre = models.CharField(max_length=50)
+
+    def __str__(self):
+        return self.nombre
+
+
 class Videojuego(models.Model):
     igdb_id = models.PositiveIntegerField(null = True, blank = True, unique = True) # el id del juego en la API de IGDB
     titulo = models.CharField(max_length=200)
@@ -24,6 +31,7 @@ class Videojuego(models.Model):
     distribuidor = models.CharField(max_length=100, blank=True)
     generos = models.ManyToManyField(Genero, blank=True)
     plataformas = models.ManyToManyField(Plataforma, blank=True) # el campo queda blank=True por motivos de testing, revisar si la API lo requiere!!!
+    idiomas = models.ManyToManyField(Idioma, blank=True) # los trae la importación de IGDB; vacío = IGDB no tiene el dato
 
     def __str__(self):
         return self.titulo
