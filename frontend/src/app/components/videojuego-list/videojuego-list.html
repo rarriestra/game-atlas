@@ -1,6 +1,8 @@
 <div class="d-flex justify-content-between align-items-center mb-3">
   <h2>Videojuegos</h2>
-  <a class="btn btn-primary" routerLink="/videojuegos/nuevo">Nuevo videojuego</a>
+  @if (sesion.esAdmin) {
+    <a class="btn btn-primary" routerLink="/videojuegos/nuevo">Nuevo videojuego</a>
+  }
 </div>
 
 <!-- buscador. Al apretar Enter o "Buscar", (ngSubmit) llama a cargar() con los filtros -->
@@ -56,8 +58,13 @@
         <td [title]="nombres(v.plataformas)">{{ nombres(v.plataformas) }}</td>
         <td>{{ v.fecha_lanzamiento }}</td>
         <td class="text-end">
-          <a class="btn btn-sm btn-outline-secondary" [routerLink]="['/videojuegos', v.id]">Ver / editar</a>
-          <button class="btn btn-sm btn-outline-danger ms-2" (click)="eliminar(v)">Eliminar</button>
+          <!-- Todos pueden ver la ficha; el texto cambia según el rol -->
+          <a class="btn btn-sm btn-outline-secondary" [routerLink]="['/videojuegos', v.id]">
+            {{ sesion.esAdmin ? 'Ver / editar' : 'Ver' }}
+          </a>
+          @if (sesion.esAdmin) {
+            <button class="btn btn-sm btn-outline-danger ms-2" (click)="eliminar(v)">Eliminar</button>
+          }
         </td>
       </tr>
     } @empty {

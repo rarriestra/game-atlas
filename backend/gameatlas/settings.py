@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework', # Porque no es solo una librería que se importa: es una app de Django
     'catalogo_videojuegos',
+    'usuarios',
 ]
 
 MIDDLEWARE = [

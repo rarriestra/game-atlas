@@ -7,6 +7,7 @@ import { Genero } from '../../models/genero.model';
 import { Videojuego } from '../../models/videojuego.model';
 import { VideojuegoService } from '../../services/videojuego-service';
 import { GeneroService } from '../../services/genero-service';
+import { SesionService } from '../../services/sesion-service';
 @Component({
   selector: 'app-videojuego-list',
   imports: [RouterLink, FormsModule],
@@ -23,7 +24,12 @@ export class VideojuegoList implements OnInit {
   totalPaginas = 1;   // lo dice Django
   total = 0;          // cantidad total de juegos encontrados
 
-  constructor(private readonly videojuegoService: VideojuegoService, private readonly generoService: GeneroService, private readonly toastr: ToastrService) {}
+  constructor(
+    private readonly videojuegoService: VideojuegoService,
+    private readonly generoService: GeneroService,
+    private readonly toastr: ToastrService,
+    readonly sesion: SesionService   // NUEVO
+  ) {}
 
   ngOnInit(): void {
     this.generoService.getAll().subscribe(data => this.generos = data);
