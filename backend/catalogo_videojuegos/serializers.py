@@ -46,8 +46,7 @@ class VideojuegoSerializer(serializers.ModelSerializer):
         return obj.en_bibliotecas.filter(puntaje__isnull=False).aggregate(promedio=Avg('puntaje'), cantidad=Count('id'))
 
     def get_puntaje_promedio(self, obj):
-        promedio = self._puntajes(obj)['promedio']
-        return round(promedio, 1) if promedio is not None else None  # None = nadie lo calificó
+        return self._puntajes(obj)['promedio']  # None = nadie lo calificó
 
     def get_cantidad_puntajes(self, obj):
         return self._puntajes(obj)['cantidad']

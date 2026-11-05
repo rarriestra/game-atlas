@@ -1,0 +1,55 @@
+<div class="p-4 mb-4 bg-light rounded-3">
+  <h1 class="display-6">Game Atlas</h1>
+  <p class="lead mb-0">Descubrí juegos, armá tu biblioteca y compartí lo que pensás.</p>
+</div>
+
+<div class="d-flex justify-content-between align-items-center mb-2">
+  <h4 class="mb-0">Agregados recientemente</h4>
+  <a routerLink="/videojuegos">Ver catálogo &rarr;</a>
+</div>
+<!-- row-cols: Bootstrap reparte las tarjetas en columnas (2 en celular, 4 en pantallas grandes) -->
+<div class="row row-cols-2 row-cols-md-4 g-3 mb-5">
+  @for (v of recientes; track v.id) {
+    <div class="col">
+      <a class="card h-100 text-decoration-none" [routerLink]="['/videojuegos', v.id]">
+        @if (v.portada_url) {
+          <img [src]="v.portada_url" [alt]="v.titulo" class="card-img-top">
+        }
+        <div class="card-body p-2">
+          <div class="small fw-bold text-body">{{ v.titulo }}</div>
+          @if (v.puntaje_promedio !== null) {
+            <span class="badge text-bg-warning mt-1">{{ v.puntaje_promedio }}/10</span>
+          }
+        </div>
+      </a>
+    </div>
+  } @empty {
+    <p class="text-muted">Todavía no hay juegos. Buscá uno en el catálogo y se importa desde IGDB.</p>
+  }
+</div>
+
+<!-- CU03: feed general de la comunidad -->
+<h4>Últimas reseñas</h4>
+@for (r of resenas; track r.id) {
+  <div class="card mb-2">
+    <div class="card-body">
+      <div class="d-flex justify-content-between">
+        <span>
+          <a class="fw-bold" [routerLink]="['/usuarios', r.usuario]">{{ r.usuario_nombre }}</a>
+          sobre
+          <a [routerLink]="['/videojuegos', r.videojuego.id]">{{ r.videojuego.titulo }}</a>
+        </span>
+        <span>
+          @if (r.puntaje) {
+            <span class="badge text-bg-warning">{{ r.puntaje }}/10</span>
+          }
+          <small class="text-muted ms-2">{{ r.creada | date: 'dd/MM/yyyy' }}</small>
+        </span>
+      </div>
+      <!-- slice corta el texto a 200 caracteres; la reseña completa está en la ficha -->
+      <p class="mt-2 mb-0">{{ r.texto | slice: 0 : 200 }}{{ r.texto.length > 200 ? '…' : '' }}</p>
+    </div>
+  </div>
+} @empty {
+  <p class="text-muted">Todavía no hay reseñas.</p>
+}

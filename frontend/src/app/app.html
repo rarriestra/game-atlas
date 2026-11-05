@@ -5,6 +5,7 @@
       <a class="nav-link" routerLink="/videojuegos" routerLinkActive="active">Videojuegos</a>
       @if (sesion.usuarioActual) {
         <a class="nav-link" routerLink="/biblioteca" routerLinkActive="active">Mi biblioteca</a>
+        <a class="nav-link" [routerLink]="['/usuarios', sesion.usuarioActual.id]" routerLinkActive="active">Mi perfil</a>
       }
       @if (sesion.esAdmin) {
         <a class="nav-link" routerLink="/generos" routerLinkActive="active">Géneros</a>

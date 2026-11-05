@@ -13,4 +13,10 @@ export class UsuarioService {
     return this.http.get<ApiResponse<Usuario[]>>('/api/usuarios/')
       .pipe(map(res => res.data));
   }
+
+  // NUEVO: un usuario por id (perfil)
+  get(id: number): Observable<Usuario> {
+    return this.http.get<ApiResponse<Usuario>>(`/api/usuarios/${id}/`)
+      .pipe(map(res => res.data));
+  }
 }

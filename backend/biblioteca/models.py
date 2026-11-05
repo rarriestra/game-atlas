@@ -39,3 +39,22 @@ class BibliotecaItem(models.Model):
 
     def __str__(self):
         return f'{self.usuario} - {self.videojuego} ({self.estado})'
+
+
+class Resena(models.Model):
+    """Opinión escrita de un usuario sobre un juego que ya calificó (CU06 a CU08)."""
+    usuario = models.ForeignKey(User, on_delete=models.CASCADE, related_name='resenas')
+    videojuego = models.ForeignKey(Videojuego, on_delete=models.CASCADE, related_name='resenas')
+    texto = models.TextField()
+    creada = models.DateTimeField(auto_now_add=True)  # se completa sola al crearla, y no cambia más
+    editada = models.DateTimeField(auto_now=True)     # se actualiza sola cada vez que se guarda
+
+    class Meta:
+        # Una reseña por usuario y juego, como en MyAnimeList
+        constraints = [
+            models.UniqueConstraint(fields=['usuario', 'videojuego'], name='una_resena_por_juego'),
+        ]
+        ordering = ['-creada']  # las más nuevas primero
+
+    def __str__(self):
+        return f'Reseña de {self.usuario} sobre {self.videojuego}'

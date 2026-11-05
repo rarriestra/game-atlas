@@ -56,3 +56,55 @@ class BibliotecaApiTests(TestCase):
         juego = self.client.get(f'/api/videojuegos/{self.juego.id}/').json()['data']
         self.assertEqual(juego['puntaje_promedio'], 8.5)
         self.assertEqual(juego['cantidad_puntajes'], 2)
+
+
+class ResenaApiTests(TestCase):
+    def setUp(self):
+        self.ana = User.objects.create(username='ana')
+        self.juego = Videojuego.objects.create(titulo='Hades')
+        self.texto = 'Un roguelike excelente, muy rejugable.'
+
+    def calificar(self, puntaje):
+        self.client.post('/api/biblioteca/', {
+            'usuario': self.ana.id, 'videojuego_id': self.juego.id, 'estado': 'COMPLETADO', 'puntaje': puntaje
+        }, content_type='application/json')
+
+    def resenar(self, texto=None):
+        return self.client.post('/api/resenas/', {
+            'usuario': self.ana.id, 'videojuego_id': self.juego.id, 'texto': texto or self.texto
+        }, content_type='application/json')
+
+    def test_sin_calificar_no_se_puede_resenar(self):
+        self.assertEqual(self.resenar().status_code, 400)
+
+    def test_crear_resena_con_puntaje(self):
+        self.calificar(9)
+        r = self.resenar()
+        self.assertEqual(r.status_code, 201)
+        self.assertEqual(r.json()['data']['puntaje'], 9)
+        self.assertEqual(r.json()['data']['usuario_nombre'], 'ana')
+
+    def test_una_sola_resena_por_juego(self):
+        self.calificar(9)
+        self.resenar()
+        self.assertEqual(self.resenar().status_code, 400)
+
+    def test_texto_muy_corto(self):
+        self.calificar(9)
+        self.assertEqual(self.resenar('Buenísimo').status_code, 400)
+
+    def test_editar_y_eliminar(self):
+        self.calificar(9)
+        id = self.resenar().json()['data']['id']
+        r = self.client.patch(f'/api/resenas/{id}/', {'texto': 'Cambié de opinión: es una obra maestra.'},
+                              content_type='application/json')
+        self.assertEqual(r.status_code, 200)
+        self.assertIn('obra maestra', r.json()['data']['texto'])
+        self.assertEqual(self.client.delete(f'/api/resenas/{id}/').status_code, 200)
+        self.assertEqual(self.client.get(f'/api/resenas/?videojuego={self.juego.id}').json()['data'], [])
+
+    def test_filtros_y_limite(self):
+        self.calificar(9)
+        self.resenar()
+        self.assertEqual(len(self.client.get(f'/api/resenas/?usuario={self.ana.id}').json()['data']), 1)
+        self.assertEqual(len(self.client.get('/api/resenas/?limite=0').json()['data']), 0)

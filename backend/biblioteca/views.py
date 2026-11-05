@@ -3,8 +3,8 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from .models import BibliotecaItem
-from .serializers import BibliotecaItemSerializer
+from .models import BibliotecaItem, Resena
+from .serializers import BibliotecaItemSerializer, ResenaSerializer
 
 
 class BibliotecaView(APIView):
@@ -46,4 +46,45 @@ class BibliotecaView(APIView):
     def delete(self, request, id):
         item = get_object_or_404(BibliotecaItem, id=id)
         item.delete()
+        return Response({'status': 'success', 'data': 'Record Deleted'})
+
+
+class ResenaView(APIView):
+    def get(self, request, *args, **kwargs):
+        id = kwargs.get('id', None)
+        if id:
+            resena = get_object_or_404(Resena, id=id)
+            return Response({'status': 'success', 'data': ResenaSerializer(resena).data})
+
+        result = Resena.objects.select_related('usuario', 'videojuego')
+        videojuego = request.query_params.get('videojuego')  # reseñas de un juego (ficha)
+        usuario = request.query_params.get('usuario')        # reseñas de un usuario (perfil)
+        if videojuego:
+            result = result.filter(videojuego_id=videojuego)
+        if usuario:
+            result = result.filter(usuario_id=usuario)
+        limite = request.query_params.get('limite')          # las últimas N (inicio)
+        if limite and limite.isdigit():
+            result = result[:int(limite)]
+        serializer = ResenaSerializer(result, many=True)
+        return Response({'status': 'success', 'data': serializer.data})
+
+    def post(self, request):
+        serializer = ResenaSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({'status': 'success', 'data': serializer.data}, status=status.HTTP_201_CREATED)
+        return Response({'status': 'error', 'data': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+
+    def patch(self, request, id):
+        resena = get_object_or_404(Resena, id=id)
+        serializer = ResenaSerializer(resena, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({'status': 'success', 'data': serializer.data})
+        return Response({'status': 'error', 'data': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, id):
+        resena = get_object_or_404(Resena, id=id)
+        resena.delete()
         return Response({'status': 'success', 'data': 'Record Deleted'})

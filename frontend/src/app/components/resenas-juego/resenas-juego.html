@@ -1,0 +1,54 @@
+<h4 class="mt-4 mb-3">Reseñas ({{ resenas.length }})</h4>
+
+<!-- CU06: escribir. Solo si hay usuario y todavía no escribió una -->
+@if (sesion.usuarioActual && !miResena) {
+  @if (calificado) {
+    <form class="mb-4" (ngSubmit)="publicar()">
+      <textarea class="form-control mb-2" name="texto" rows="3" placeholder="¿Qué te pareció?"
+                [(ngModel)]="texto"></textarea>
+      <button type="submit" class="btn btn-primary btn-sm" [disabled]="texto.trim().length < 10">
+        Publicar reseña
+      </button>
+      <span class="text-muted small ms-2">Mínimo 10 caracteres.</span>
+    </form>
+  } @else {
+    <p class="text-muted small">Para escribir una reseña, primero calificá el juego en el panel "Mi biblioteca".</p>
+  }
+}
+
+@for (r of resenas; track r.id) {
+  <!-- [class.border-primary]: la reseña propia se resalta con borde azul -->
+  <div class="card mb-2" [class.border-primary]="r.usuario === sesion.usuarioActual?.id">
+    <div class="card-body">
+      <div class="d-flex justify-content-between align-items-center">
+        <a class="fw-bold" [routerLink]="['/usuarios', r.usuario]">{{ r.usuario_nombre }}</a>
+        <span>
+          @if (r.puntaje) {
+            <span class="badge text-bg-warning">{{ r.puntaje }}/10</span>
+          }
+          <!-- | date: el pipe DatePipe formatea la fecha que manda Django -->
+          <small class="text-muted ms-2">{{ r.creada | date: 'dd/MM/yyyy' }}</small>
+        </span>
+      </div>
+
+      @if (editandoId === r.id) {
+        <!-- CU07: modo edición -->
+        <textarea class="form-control my-2" name="edicion" rows="3" [(ngModel)]="textoEdicion"></textarea>
+        <button type="button" class="btn btn-sm btn-primary" (click)="guardarEdicion(r)"
+                [disabled]="textoEdicion.trim().length < 10">Guardar</button>
+        <button type="button" class="btn btn-sm btn-link" (click)="editandoId = undefined">Cancelar</button>
+      } @else {
+        <!-- white-space: pre-line respeta los saltos de línea que escribió el usuario -->
+        <p class="mt-2 mb-1" style="white-space: pre-line">{{ r.texto }}</p>
+        @if (r.usuario === sesion.usuarioActual?.id) {
+          <button type="button" class="btn btn-sm btn-link px-0" (click)="editar(r)">Editar</button>
+        }
+        @if (puedeEliminar(r)) {
+          <button type="button" class="btn btn-sm btn-link text-danger" (click)="eliminar(r)">Eliminar</button>
+        }
+      }
+    </div>
+  </div>
+} @empty {
+  <p class="text-muted">Todavía no hay reseñas de este juego.</p>
+}

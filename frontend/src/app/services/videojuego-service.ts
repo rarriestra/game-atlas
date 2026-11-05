@@ -53,6 +53,12 @@ export class VideojuegoService {
     // Acá no usamos map: necesitamos data, count y pages, no solo data
     return this.http.get<Pagina<Videojuego>>(baseUrl, { params });
   }
+  // NUEVO: los últimos juegos agregados (inicio). Reusa la paginación: página 1 con N juegos
+  getRecientes(cantidad: number): Observable<Videojuego[]> {
+    const params = new HttpParams().set('orden', 'recientes').set('page', 1).set('page_size', cantidad);
+    return this.http.get<Pagina<Videojuego>>(baseUrl, { params })
+      .pipe(map(res => res.data));
+  }
   // la API recibe los ids en generos_ids y plataformas_ids
   // private = solo se usa dentro de este servicio
   private paraEnviar(videojuego: Videojuego) {
