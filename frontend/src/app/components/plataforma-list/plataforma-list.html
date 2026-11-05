@@ -1,0 +1,66 @@
+<h2 class="mb-3">Plataformas</h2>
+
+@if (mensaje) {
+  <div class="alert alert-danger">{{ mensaje }}</div>
+}
+
+<form #f="ngForm" class="row g-2 mb-4" (ngSubmit)="agregar()">
+  <div class="col-md-6">
+    <input class="form-control" name="nombre" placeholder="Nombre de la plataforma" required maxlength="50"
+           [(ngModel)]="plataforma.nombre">
+  </div>
+  <div class="col-md-6 d-flex gap-2">
+    <button type="submit" class="btn btn-primary" [disabled]="f.invalid || guardando">Agregar</button>
+  </div>
+</form>
+
+@if (seleccionados.size > 0) {
+  <div class="mb-2">
+    <button class="btn btn-sm btn-danger" [disabled]="eliminando" (click)="eliminarSeleccionados()">
+      Eliminar seleccionadas ({{ seleccionados.size }})
+    </button>
+  </div>
+}
+
+<table class="table table-striped align-middle">
+  <thead>
+    <tr>
+      <th>
+        <input class="form-check-input" type="checkbox" aria-label="Seleccionar todas"
+               [checked]="todosSeleccionados" (change)="alternarTodos()">
+      </th>
+      <th>Nombre</th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    @for (p of plataformas; track p.id) {
+      <tr [ngClass]="{ 'table-warning': p.id === editandoId }">
+        <td>
+          <input class="form-check-input" type="checkbox" [attr.aria-label]="'Seleccionar ' + p.nombre"
+                 [checked]="seleccionados.has(p.id!)" (change)="alternarSeleccion(p.id!)">
+        </td>
+        @if (p.id === editandoId) {
+          <td>
+            <input #campoEdicion class="form-control form-control-sm" aria-label="Nombre de la plataforma" maxlength="50"
+                   [(ngModel)]="nombreEditado" (keyup.enter)="guardarEdicion()" (keyup.escape)="cancelar()">
+          </td>
+          <td class="text-end">
+            <button class="btn btn-sm btn-primary" [disabled]="!nombreEditado.trim() || guardando" (click)="guardarEdicion()">Guardar</button>
+            <button class="btn btn-sm btn-outline-secondary ms-2" (click)="cancelar()">Cancelar</button>
+          </td>
+        } @else {
+          <td>{{ p.nombre }}</td>
+          <td class="text-end">
+            <button class="btn btn-sm btn-outline-secondary" (click)="editar(p)">Editar</button>
+            <button class="btn btn-sm btn-outline-danger ms-2" (click)="eliminar(p)">Eliminar</button>
+          </td>
+        }
+      </tr>
+    } @empty {
+      <tr>
+        <td colspan="3" class="text-center text-muted">No hay plataformas cargadas.</td>
+      </tr>
+    }
+  </tbody>
+</table>
