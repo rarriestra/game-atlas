@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { DatePipe, SlicePipe } from '@angular/common';
+import { DatePipe, DecimalPipe, SlicePipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { Resena } from '../../models/resena.model';
 import { Videojuego } from '../../models/videojuego.model';
@@ -8,7 +8,7 @@ import { VideojuegoService } from '../../services/videojuego-service';
 
 @Component({
   selector: 'app-inicio',
-  imports: [RouterLink, DatePipe, SlicePipe],
+  imports: [RouterLink, DatePipe, DecimalPipe, SlicePipe],
   templateUrl: './inicio.html',
   styleUrl: './inicio.css'
 })

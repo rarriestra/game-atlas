@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { DatePipe } from '@angular/common';
+import { DatePipe, DecimalPipe } from '@angular/common';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { BibliotecaItem, ESTADOS, Estado } from '../../models/biblioteca-item.model';
 import { Resena } from '../../models/resena.model';
@@ -10,7 +10,7 @@ import { UsuarioService } from '../../services/usuario-service';
 
 @Component({
   selector: 'app-perfil',
-  imports: [RouterLink, DatePipe],
+  imports: [RouterLink, DatePipe, DecimalPipe],
   templateUrl: './perfil.html',
   styleUrl: './perfil.css'
 })

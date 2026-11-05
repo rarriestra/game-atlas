@@ -1,4 +1,11 @@
-<h4 class="mt-4 mb-3">Reseñas ({{ resenas.length }})</h4>
+<div class="d-flex justify-content-between align-items-center mt-4 mb-3">
+  <h4 class="mb-0">Reseñas ({{ resenas.length }})</h4>
+  <!-- NUEVO: orden -->
+  <select class="form-select form-select-sm w-auto" [ngModel]="orden" (ngModelChange)="cambiarOrden($event)">
+    <option value="recientes">Más recientes</option>
+    <option value="votadas">Más votadas</option>
+  </select>
+</div>
 
 <!-- CU06: escribir. Solo si hay usuario y todavía no escribió una -->
 @if (sesion.usuarioActual && !miResena) {
@@ -27,7 +34,7 @@
             <span class="badge text-bg-warning">{{ r.puntaje }}/10</span>
           }
           <!-- | date: el pipe DatePipe formatea la fecha que manda Django -->
-          <small class="text-muted ms-2">{{ r.creada | date: 'dd/MM/yyyy' }}</small>
+          <small class="text-muted ms-2">{{ r.creada | date: 'dd/MM/yyyy HH:mm' }}</small>
         </span>
       </div>
 
@@ -40,12 +47,49 @@
       } @else {
         <!-- white-space: pre-line respeta los saltos de línea que escribió el usuario -->
         <p class="mt-2 mb-1" style="white-space: pre-line">{{ r.texto }}</p>
-        @if (r.usuario === sesion.usuarioActual?.id) {
-          <button type="button" class="btn btn-sm btn-link px-0" (click)="editar(r)">Editar</button>
-        }
-        @if (puedeEliminar(r)) {
-          <button type="button" class="btn btn-sm btn-link text-danger" (click)="eliminar(r)">Eliminar</button>
-        }
+        <div class="d-flex align-items-center gap-2">
+          <!-- NUEVO: like. Relleno si ya le diste; deshabilitado en la propia o sin usuario -->
+          <button type="button" class="btn btn-sm"
+                  [class.btn-danger]="r.me_gusta" [class.btn-outline-danger]="!r.me_gusta"
+                  [disabled]="!sesion.usuarioActual || r.usuario === sesion.usuarioActual.id"
+                  (click)="like(r)">
+            &#9829; {{ r.likes }}
+          </button>
+          @if (sesion.usuarioActual) {
+            <button type="button" class="btn btn-sm btn-link px-0" (click)="abrirRespuesta(r)">Responder</button>
+          }
+          @if (r.usuario === sesion.usuarioActual?.id) {
+            <button type="button" class="btn btn-sm btn-link px-0" (click)="editar(r)">Editar</button>
+          }
+          @if (puedeEliminar(r)) {
+            <button type="button" class="btn btn-sm btn-link text-danger px-0" (click)="eliminar(r)">Eliminar</button>
+          }
+        </div>
+      }
+
+      <!-- NUEVO: respuestas, con una línea a la izquierda para que se vea que cuelgan de la reseña -->
+      @if (r.respuestas.length || respondiendoId === r.id) {
+        <div class="border-start border-2 ps-3 mt-3">
+          @for (resp of r.respuestas; track resp.id) {
+            <div class="mb-2">
+              <a class="fw-bold small" [routerLink]="['/usuarios', resp.usuario]">{{ resp.usuario_nombre }}</a>
+              <small class="text-muted ms-1">{{ resp.creada | date: 'dd/MM/yyyy HH:mm' }}</small>
+              @if (puedeEliminarRespuesta(resp)) {
+                <button type="button" class="btn btn-sm btn-link text-danger py-0" (click)="eliminarRespuesta(r, resp)">Eliminar</button>
+              }
+              <div class="small" style="white-space: pre-line">{{ resp.texto }}</div>
+            </div>
+          }
+          @if (respondiendoId === r.id) {
+            <div class="d-flex gap-2">
+              <input class="form-control form-control-sm" name="respuesta" placeholder="Escribí tu respuesta"
+                     [(ngModel)]="textoRespuesta" (keyup.enter)="responder(r)">
+              <button type="button" class="btn btn-sm btn-primary" [disabled]="textoRespuesta.trim().length < 2"
+                      (click)="responder(r)">Enviar</button>
+              <button type="button" class="btn btn-sm btn-link" (click)="respondiendoId = undefined">Cancelar</button>
+            </div>
+          }
+        </div>
       }
     </div>
   </div>

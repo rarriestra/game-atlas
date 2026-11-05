@@ -2,7 +2,7 @@ from django.contrib.auth.models import User
 from rest_framework import serializers
 
 from catalogo_videojuegos.models import Videojuego
-from .models import BibliotecaItem, Resena
+from .models import BibliotecaItem, Resena, RespuestaResena
 
 
 class VideojuegoResumenSerializer(serializers.ModelSerializer):
@@ -45,6 +45,23 @@ class BibliotecaItemSerializer(serializers.ModelSerializer):
         return super().update(instance, validated_data)
 
 
+class RespuestaResenaSerializer(serializers.ModelSerializer):
+    usuario = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
+    usuario_nombre = serializers.CharField(source='usuario.username', read_only=True)
+
+    class Meta:
+        model = RespuestaResena
+        # la reseña no va acá: la pone la vista, sacándola de la URL (/api/resenas/5/respuestas/)
+        fields = ['id', 'usuario', 'usuario_nombre', 'texto', 'creada']
+        read_only_fields = ['creada']
+
+    def validate_texto(self, valor):
+        valor = valor.strip()
+        if not 2 <= len(valor) <= 1000:
+            raise serializers.ValidationError('La respuesta tiene que tener entre 2 y 1000 caracteres.')
+        return valor
+
+
 class ResenaSerializer(serializers.ModelSerializer):
     videojuego = VideojuegoResumenSerializer(read_only=True)
     videojuego_id = serializers.PrimaryKeyRelatedField(
@@ -55,16 +72,29 @@ class ResenaSerializer(serializers.ModelSerializer):
     usuario_nombre = serializers.CharField(source='usuario.username', read_only=True)
     # El puntaje que el autor le dio al juego en su biblioteca (se muestra junto a la reseña)
     puntaje = serializers.SerializerMethodField()
+    # NUEVO (Guía 8)
+    likes = serializers.SerializerMethodField()        # cuántos "me gusta" tiene
+    me_gusta = serializers.SerializerMethodField()     # si el usuario que mira ya le dio like
+    respuestas = RespuestaResenaSerializer(many=True, read_only=True)  # la conversación
 
     class Meta:
         model = Resena
         fields = ['id', 'usuario', 'usuario_nombre', 'videojuego', 'videojuego_id',
-                  'puntaje', 'texto', 'creada', 'editada']
+                  'puntaje', 'texto', 'creada', 'editada', 'likes', 'me_gusta', 'respuestas']
         read_only_fields = ['creada', 'editada']
 
     def get_puntaje(self, obj):
         item = BibliotecaItem.objects.filter(usuario=obj.usuario, videojuego=obj.videojuego).first()
         return item.puntaje if item else None
+
+    def get_likes(self, obj):
+        # Si la vista ya los contó con annotate, usa ese número; si no, los cuenta
+        return getattr(obj, 'cantidad_likes', None) or obj.likes.count()
+
+    def get_me_gusta(self, obj):
+        # 'yo' es el id del usuario que está mirando: lo pasa la vista en el context
+        yo = self.context.get('yo')
+        return bool(yo) and obj.likes.filter(usuario_id=yo).exists()
 
     def validate_texto(self, valor):
         """validate_<campo>: DRF la llama solo para ese campo."""

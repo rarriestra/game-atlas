@@ -2,6 +2,7 @@ from django.contrib.auth.models import User
 from django.test import TestCase
 
 from catalogo_videojuegos.models import Videojuego
+from .models import BibliotecaItem, Resena
 
 
 class BibliotecaApiTests(TestCase):
@@ -108,3 +109,46 @@ class ResenaApiTests(TestCase):
         self.resenar()
         self.assertEqual(len(self.client.get(f'/api/resenas/?usuario={self.ana.id}').json()['data']), 1)
         self.assertEqual(len(self.client.get('/api/resenas/?limite=0').json()['data']), 0)
+
+
+class LikesYRespuestasTests(TestCase):
+    def setUp(self):
+        self.ana = User.objects.create(username='ana')
+        self.beto = User.objects.create(username='beto')
+        juego = Videojuego.objects.create(titulo='Hades')
+        BibliotecaItem.objects.create(usuario=self.ana, videojuego=juego, estado='COMPLETADO', puntaje=9)
+        self.resena = Resena.objects.create(usuario=self.ana, videojuego=juego, texto='Un roguelike excelente.')
+        self.juego = juego
+
+    def like(self, usuario):
+        return self.client.post(f'/api/resenas/{self.resena.id}/like/', {'usuario': usuario.id},
+                                content_type='application/json')
+
+    def test_like_funciona_como_interruptor(self):
+        r = self.like(self.beto).json()['data']
+        self.assertEqual((r['likes'], r['me_gusta']), (1, True))
+        r = self.like(self.beto).json()['data']
+        self.assertEqual((r['likes'], r['me_gusta']), (0, False))
+
+    def test_no_se_puede_dar_like_a_la_propia(self):
+        self.assertEqual(self.like(self.ana).status_code, 400)
+
+    def test_me_gusta_depende_de_quien_mira(self):
+        self.like(self.beto)
+        url = f'/api/resenas/?videojuego={self.juego.id}'
+        self.assertTrue(self.client.get(f'{url}&yo={self.beto.id}').json()['data'][0]['me_gusta'])
+        self.assertFalse(self.client.get(f'{url}&yo={self.ana.id}').json()['data'][0]['me_gusta'])
+
+    def test_responder_y_borrar_respuesta(self):
+        r = self.client.post(f'/api/resenas/{self.resena.id}/respuestas/', {'usuario': self.beto.id, 'texto': 'Coincido!'},
+                             content_type='application/json')
+        self.assertEqual(r.status_code, 201)
+        resena = self.client.get(f'/api/resenas/{self.resena.id}/').json()['data']
+        self.assertEqual(resena['respuestas'][0]['usuario_nombre'], 'beto')
+        self.assertEqual(self.client.delete(f"/api/respuestas/{r.json()['data']['id']}/").status_code, 200)
+
+    def test_orden_por_mas_votadas(self):
+        otra = Resena.objects.create(usuario=self.beto, videojuego=self.juego, texto='Muy bueno, lo recomiendo.')
+        self.client.post(f'/api/resenas/{otra.id}/like/', {'usuario': self.ana.id}, content_type='application/json')
+        datos = self.client.get(f'/api/resenas/?videojuego={self.juego.id}&orden=votadas').json()['data']
+        self.assertEqual(datos[0]['id'], otra.id)

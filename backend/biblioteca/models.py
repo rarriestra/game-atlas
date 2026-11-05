@@ -58,3 +58,33 @@ class Resena(models.Model):
 
     def __str__(self):
         return f'Reseña de {self.usuario} sobre {self.videojuego}'
+
+
+class LikeResena(models.Model):
+    """Un "me gusta" de un usuario a una reseña."""
+    usuario = models.ForeignKey(User, on_delete=models.CASCADE, related_name='likes_resenas')
+    resena = models.ForeignKey(Resena, on_delete=models.CASCADE, related_name='likes')
+    creado = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        # Cada usuario puede darle like a una reseña una sola vez
+        constraints = [
+            models.UniqueConstraint(fields=['usuario', 'resena'], name='un_like_por_usuario'),
+        ]
+
+    def __str__(self):
+        return f'{self.usuario} le dio like a la reseña {self.resena_id}'
+
+
+class RespuestaResena(models.Model):
+    """Respuesta de un usuario a una reseña (la conversación debajo de cada reseña)."""
+    usuario = models.ForeignKey(User, on_delete=models.CASCADE, related_name='respuestas_resenas')
+    resena = models.ForeignKey(Resena, on_delete=models.CASCADE, related_name='respuestas')
+    texto = models.TextField()
+    creada = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['creada']  # en orden de llegada, como una conversación
+
+    def __str__(self):
+        return f'Respuesta de {self.usuario} a la reseña {self.resena_id}'

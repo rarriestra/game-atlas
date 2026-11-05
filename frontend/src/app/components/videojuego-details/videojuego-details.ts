@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { NgClass } from '@angular/common';               // para la validación visual (is-invalid)
+import { DecimalPipe, NgClass } from '@angular/common';  // NgClass: para la validación visual (is-invalid). DecimalPipe: pipe number, para el promedio
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { ToastrService } from 'ngx-toastr';              // avisos en la esquina
@@ -16,7 +16,7 @@ import { ResenasJuego } from '../resenas-juego/resenas-juego';
 
 @Component({
   selector: 'app-videojuego-details',
-  imports: [FormsModule, NgClass, RouterLink, BibliotecaPanel, ResenasJuego], // NgClass
+  imports: [FormsModule, NgClass, DecimalPipe, RouterLink, BibliotecaPanel, ResenasJuego], // NgClass
   templateUrl: './videojuego-details.html',
   styleUrl: './videojuego-details.css'
 })
