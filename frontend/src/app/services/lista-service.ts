@@ -17,6 +17,12 @@ export class ListaService {
       .pipe(map(res => res.data));
   }
 
+    // Todas las listas públicas (para la actividad reciente en inicio)
+  getTodas(): Observable<Lista[]> {
+    return this.http.get<ApiResponse<Lista[]>>(baseUrl)
+      .pipe(map(res => res.data));
+  }
+
   get(id: number): Observable<Lista> {
     return this.http.get<ApiResponse<Lista>>(`${baseUrl}${id}/`)
       .pipe(map(res => res.data));

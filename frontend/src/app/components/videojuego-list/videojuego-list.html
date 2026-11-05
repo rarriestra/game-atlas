@@ -130,7 +130,9 @@
               }
               <!-- El estado es de la biblioteca del usuario elegido: el visitante no tiene -->
               @if (sesion.usuarioActual) {
-                <span class="text-uppercase texto-estado">{{ estadoDe(v) }}</span>
+                <span class="badge texto-estado estado-{{ (estados.get(v.id!) ?? 'NONE') | lowercase }}">
+                  {{ estadoDe(v) }}
+                </span>
               }
             </div>
             <!-- Aparte del promedio general: el puntaje que le puso el usuario elegido -->

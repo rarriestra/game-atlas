@@ -5,6 +5,7 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from moderacion.permisos import rechazar_si_suspendido
 from catalogo_videojuegos.models import Videojuego
 from .models import BibliotecaItem, LikeResena, Lista, Resena, RespuestaResena
 from .serializers import BibliotecaItemSerializer, ListaSerializer, ResenaSerializer, RespuestaResenaSerializer
@@ -127,6 +128,9 @@ class ResenaView(APIView):
         return Response({'status': 'success', 'data': serializer.data})
 
     def post(self, request):
+        bloqueo = rechazar_si_suspendido(request.data.get('usuario'))   # NUEVO (Guía 12): CU26
+        if bloqueo:
+            return bloqueo
         serializer = ResenaSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
@@ -171,6 +175,9 @@ class LikeResenaView(APIView):
 class RespuestasDeResenaView(APIView):
     # POST /api/resenas/5/respuestas/  con  {"usuario": 2, "texto": "..."}
     def post(self, request, id):
+        bloqueo = rechazar_si_suspendido(request.data.get('usuario'))   # NUEVO (Guía 12): CU26
+        if bloqueo:
+            return bloqueo
         resena = get_object_or_404(Resena, id=id)
         serializer = RespuestaResenaSerializer(data=request.data)
         if serializer.is_valid():

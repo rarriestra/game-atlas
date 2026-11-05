@@ -8,10 +8,11 @@ import { Resena, RespuestaResena } from '../../models/resena.model';
 import { BibliotecaService } from '../../services/biblioteca-service';
 import { ResenaService } from '../../services/resena-service';
 import { SesionService } from '../../services/sesion-service';
+import { BotonReportar } from '../boton-reportar/boton-reportar';
 
 @Component({
   selector: 'app-resenas-juego',
-  imports: [FormsModule, RouterLink, DatePipe],
+  imports: [FormsModule, RouterLink, DatePipe, BotonReportar],
   templateUrl: './resenas-juego.html',
   styleUrl: './resenas-juego.css'
 })
@@ -78,7 +79,8 @@ export class ResenasJuego implements DoCheck {
         this.texto = '';
         this.toastr.success('Reseña publicada');
       },
-      error: () => this.toastr.error('No se pudo publicar. Revisá que el juego esté calificado.')
+      // 403 = el usuario está suspendido: se muestra el mensaje de Django ("Estás suspendido hasta...")
+      error: (err) => this.toastr.error(err.status === 403 ? err.error.data : 'No se pudo publicar. Revisá que el juego esté calificado.')
     });
   }
 
@@ -155,7 +157,7 @@ export class ResenasJuego implements DoCheck {
         resena.respuestas = [...resena.respuestas, respuesta];   // la nueva va al final
         this.respondiendoId = undefined;
       },
-      error: () => this.toastr.error('No se pudo responder')
+      error: (err) => this.toastr.error(err.status === 403 ? err.error.data : 'No se pudo responder')
     });
   }
 

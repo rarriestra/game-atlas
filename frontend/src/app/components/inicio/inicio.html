@@ -1,8 +1,26 @@
-<div class="p-4 mb-4 bg-light rounded-3">
-  <h1 class="display-6">Game Atlas</h1>
-  <p class="lead mb-0">Descubrí juegos, armá tu biblioteca y compartí lo que pensás.</p>
+<div class="p-4 mb-4 bg-light rounded-3 d-flex justify-content-between align-items-center">
+  <div>
+    <h1 class="display-6">GameAtlas</h1>
+    <p class="lead mb-0">Descubrí juegos, armá tu biblioteca y compartí lo que pensás.</p>
+  </div>
+  <!-- Pastilla de estadísticas: solo visible si hay usuario logueado -->
+  @if (sesion.usuarioActual) {
+    <div class="stats-pill d-flex gap-4 border rounded-3 px-4 py-3">
+      <div class="text-center">
+        <div class="stats-numero">{{ completados }}</div>
+        <div class="stats-label">JUGADOS</div>
+      </div>
+      <div class="text-center">
+        <div class="stats-numero">{{ jugando }}</div>
+        <div class="stats-label">EN CURSO</div>
+      </div>
+      <div class="text-center">
+        <div class="stats-numero">{{ pendientes }}</div>
+        <div class="stats-label">PENDIENTES</div>
+      </div>
+    </div>
+  }
 </div>
-
 <div class="d-flex justify-content-between align-items-center mb-2">
   <h4 class="mb-0">Agregados recientemente</h4>
   <a routerLink="/videojuegos">Ver catálogo &rarr;</a>
@@ -27,11 +45,9 @@
     <p class="text-muted">Todavía no hay juegos. Buscá uno en el catálogo y se importa desde IGDB.</p>
   }
 </div>
-
 <!-- NUEVO (Guía 10): feed de actividad, CU03 (Todos) y CU21 (Seguidos).
      Reemplaza a "Últimas reseñas": el feed ya incluye las reseñas -->
 <app-feed-actividad />
-
 <!-- NUEVO (Guía 9): actividad de los foros -->
 <h4 class="mt-5">Tópicos recientes</h4>
 <div class="list-group mb-4">
@@ -45,5 +61,24 @@
     </a>
   } @empty {
     <p class="text-muted">Todavía no hay tópicos.</p>
+  }
+</div>
+<!-- Actividad reciente de listas -->
+<h4 class="mt-5">Actividad de listas</h4>
+<div class="list-group mb-5">
+  @for (l of listas; track l.id) {
+    <a class="list-group-item list-group-item-action" [routerLink]="['/listas', l.id]">
+      <div class="d-flex justify-content-between">
+        <span class="fw-bold">{{ l.nombre }}</span>
+        <span class="badge text-bg-secondary align-self-center">
+          {{ l.videojuegos.length }} {{ l.videojuegos.length === 1 ? 'juego' : 'juegos' }}
+        </span>
+      </div>
+      <small class="text-muted">
+        <strong>{{ l.usuario_nombre }}</strong> {{ accionLista(l) }} · {{ l.actualizada | date: 'dd/MM/yyyy HH:mm' }}
+      </small>
+    </a>
+  } @empty {
+    <p class="text-muted">Todavía no hay actividad en listas.</p>
   }
 </div>

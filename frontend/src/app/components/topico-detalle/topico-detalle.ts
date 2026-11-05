@@ -7,10 +7,11 @@ import Swal from 'sweetalert2';
 import { Comentario, RespuestaComentario, TopicoDetalle } from '../../models/foro.model';
 import { ForoService } from '../../services/foro-service';
 import { SesionService } from '../../services/sesion-service';
+import { BotonReportar } from '../boton-reportar/boton-reportar';
 
 @Component({
   selector: 'app-topico-detalle',
-  imports: [FormsModule, RouterLink, DatePipe],
+  imports: [FormsModule, RouterLink, DatePipe, BotonReportar],
   templateUrl: './topico-detalle.html',
   styleUrl: './topico-detalle.css'
 })
@@ -116,7 +117,7 @@ export class TopicoDetalleComponent implements OnInit {
         this.textoComentario = '';
         this.cargar();
       },
-      error: () => this.toastr.error('No se pudo comentar')
+      error: (err) => this.toastr.error(err.status === 403 ? err.error.data : 'No se pudo comentar')
     });
   }
 
@@ -136,7 +137,7 @@ export class TopicoDetalleComponent implements OnInit {
         this.respondiendoA = undefined;
         this.cargar();
       },
-      error: () => this.toastr.error('No se pudo responder')
+      error: (err) => this.toastr.error(err.status === 403 ? err.error.data : 'No se pudo responder')
     });
   }
 

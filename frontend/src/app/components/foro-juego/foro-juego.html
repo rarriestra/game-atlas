@@ -12,10 +12,11 @@
            maxlength="150" [(ngModel)]="titulo">
     <textarea class="form-control mb-2" name="texto" rows="4" placeholder="Contá tu duda o tu idea"
               [(ngModel)]="texto"></textarea>
-    <div>
+    <div class="d-flex align-items-center gap-2">
       <button type="submit" class="btn btn-sm btn-primary"
               [disabled]="titulo.trim().length < 5 || texto.trim().length < 10">Publicar</button>
       <button type="button" class="btn btn-sm btn-link" (click)="creando = false">Cancelar</button>
+      <span class="text-muted small">Título: mínimo 5 caracteres. Texto: mínimo 10 caracteres.</span>
     </div>
   </form>
 }

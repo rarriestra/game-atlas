@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     'usuarios',
     'biblioteca',   # NUEVO
     'comunidad',    # NUEVO (Guía 9)
+    'moderacion',   # NUEVO (Guía 12)
 ]
 
 MIDDLEWARE = [

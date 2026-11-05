@@ -1,0 +1,25 @@
+@if (suspension) {
+  <div class="alert alert-danger">
+    {{ esMiPerfil ? 'Estás suspendido' : 'Usuario suspendido' }} hasta el {{ suspension.fin | date: 'dd/MM/yyyy HH:mm' }}:
+    no {{ esMiPerfil ? 'podés' : 'puede' }} publicar reseñas, tópicos ni comentarios.
+  </div>
+}
+
+@if (sanciones.length) {
+  <div class="card mb-4">
+    <div class="card-body">
+      <h5 class="card-title">Sanciones <small class="text-muted fs-6">(solo {{ esMiPerfil ? 'vos y los moderadores las ven' : 'la ven el usuario y los moderadores' }})</small></h5>
+      @for (s of sanciones; track s.id) {
+        <div class="mb-2">
+          <span class="badge" [class.text-bg-warning]="s.tipo === 'ADVERTENCIA'" [class.text-bg-danger]="s.tipo === 'SUSPENSION'">{{ s.tipo_texto }}</span>
+          <small class="text-muted ms-1">
+            el {{ s.inicio | date: 'dd/MM/yyyy' }} por {{ s.moderador_nombre }}
+            @if (s.fin) { · hasta el {{ s.fin | date: 'dd/MM/yyyy HH:mm' }} }
+          </small>
+          @if (s.vigente) { <span class="badge text-bg-danger ms-1">Vigente</span> }
+          @if (s.motivo) { <div class="small">{{ s.motivo }}</div> }
+        </div>
+      }
+    </div>
+  </div>
+}

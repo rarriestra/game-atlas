@@ -41,7 +41,7 @@ export class ForoJuego implements OnInit {
         this.toastr.success('Tópico creado');
         this.router.navigate(['/topicos', topico.id]);
       },
-      error: () => this.toastr.error('No se pudo crear. Título de 5 caracteres o más y texto de 10 o más.')
+      error: (err) => this.toastr.error(err.status === 403 ? err.error.data : 'No se pudo crear. Título de 5 caracteres o más y texto de 10 o más.')
     });
   }
 }

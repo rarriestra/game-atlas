@@ -64,6 +64,8 @@
           @if (puedeEliminar(r)) {
             <button type="button" class="btn btn-sm btn-link text-danger px-0" (click)="eliminar(r)">Eliminar</button>
           }
+          <!-- NUEVO (Guía 12): CU23. Solo aparece si hay usuario y la reseña no es suya -->
+          <app-boton-reportar tipo="RESENA" [contenidoId]="r.id" [autorId]="r.usuario" />
         </div>
       }
 

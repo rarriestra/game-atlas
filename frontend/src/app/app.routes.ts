@@ -9,6 +9,7 @@ import { Inicio } from './components/inicio/inicio';
 import { Perfil } from './components/perfil/perfil';
 import { TopicoDetalleComponent } from './components/topico-detalle/topico-detalle';
 import { ListaDetalle } from './components/lista-detalle/lista-detalle';
+import { Moderacion } from './components/moderacion/moderacion';
 import { soloAdmin } from './guards/solo-admin';
 
 export const routes: Routes = [
@@ -22,4 +23,5 @@ export const routes: Routes = [
   { path: 'usuarios/:id', component: Perfil },          // NUEVO
   { path: 'topicos/:id', component: TopicoDetalleComponent },   // NUEVO (Guía 9)
   { path: 'listas/:id', component: ListaDetalle },              // NUEVO (Guía 11)
+  { path: 'moderacion', component: Moderacion, canActivate: [soloAdmin] },   // NUEVO (Guía 12)
 ];

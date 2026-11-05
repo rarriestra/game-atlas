@@ -23,4 +23,5 @@ urlpatterns = [
     path('api/', include('usuarios.urls')), # usamos include para separar las urls de la app usuarios
     path('api/', include('biblioteca.urls')),   # NUEVO
     path('api/', include('comunidad.urls')),   # NUEVO (Guía 9)
+    path('api/', include('moderacion.urls')),  # NUEVO (Guía 12)
 ]

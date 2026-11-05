@@ -19,6 +19,11 @@ export class ForoService {
     const params = new HttpParams().set('limite', cantidad);
     return this.http.get<ApiResponse<Topico[]>>('/api/topicos/', { params }).pipe(map(res => res.data));
   }
+  
+  getDeUsuario(usuarioId: number): Observable<Topico[]> {
+    const params = new HttpParams().set('usuario', usuarioId);
+    return this.http.get<ApiResponse<Topico[]>>('/api/topicos/', { params }).pipe(map(res => res.data));
+  }
 
   // CU12: un tópico con sus comentarios
   getTopico(id: number): Observable<TopicoDetalle> {

@@ -1,27 +1,32 @@
-<nav class="navbar navbar-expand navbar-dark bg-dark mb-4">
+<nav class="navbar navbar-expand navbar-light bg-white border-bottom shadow-sm sticky-top">
   <div class="container">
-    <a class="navbar-brand" routerLink="/">Game Atlas</a>
-    <div class="navbar-nav">
-      <!-- exact: se resalta solo en el catálogo (/videojuegos), no dentro de la ficha de un juego (/videojuegos/5) -->
+    <!-- Izquierda: icono + marca -->
+    <a class="navbar-brand d-flex align-items-center gap-2 fw-bold text-dark" routerLink="/">
+      <span class="navbar-brand-icon">GA</span>
+      GameAtlas
+    </a>
+    <!-- Centro: links de navegacion (centrado con grid de 3 columnas en app.css) -->
+    <div class="navbar-nav gap-1">
+      <!-- exact: se resalta solo en el catalogo (/videojuegos), no dentro de la ficha de un juego (/videojuegos/5) -->
       <a class="nav-link" routerLink="/videojuegos" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">Videojuegos</a>
       @if (sesion.usuarioActual) {
         <a class="nav-link" routerLink="/biblioteca" routerLinkActive="active">Mi biblioteca</a>
         <a class="nav-link" [routerLink]="['/usuarios', sesion.usuarioActual.id]" routerLinkActive="active">Mi perfil</a>
       }
       @if (sesion.esAdmin) {
-        <a class="nav-link" routerLink="/generos" routerLinkActive="active">Géneros</a>
+        <a class="nav-link" routerLink="/generos" routerLinkActive="active">Generos</a>
         <a class="nav-link" routerLink="/plataformas" routerLinkActive="active">Plataformas</a>
+        <!-- NUEVO (Guía 12): el admin es el actor Moderador -->
+        <a class="nav-link" routerLink="/moderacion" routerLinkActive="active">Moderación</a>
       }
     </div>
-
-    <!-- NUEVO: selector de usuario. ms-auto lo empuja a la derecha -->
-    <div class="ms-auto d-flex align-items-center gap-2">
-      <label class="text-light small mb-0" for="usuario">Usuario:</label>
+    <!-- Derecha: selector de usuario -->
+    <div class="navbar-actions">
       <!-- [ngModel] muestra el elegido; (ngModelChange) avisa cuando cambia.
-           Están separados porque al cambiar no guardamos solo el id: buscamos el usuario completo -->
-      <select id="usuario" class="form-select form-select-sm" style="width: 180px"
+           Estan separados porque al cambiar no guardamos solo el id: buscamos el usuario completo -->
+      <select id="usuario" class="form-select form-select-sm navbar-user-select"
               [ngModel]="sesion.usuarioActual?.id ?? null" (ngModelChange)="cambiarUsuario($event)">
-        <!-- null = sin usuario: es lo que hace que esta opción aparezca elegida por defecto -->
+        <!-- null = sin usuario: es lo que hace que esta opcion aparezca elegida por defecto -->
         <option [ngValue]="null">Visitante (sin usuario)</option>
         @for (u of usuarios; track u.id) {
           <option [ngValue]="u.id">{{ u.username }}{{ u.is_staff ? ' (admin)' : '' }}</option>
@@ -30,7 +35,6 @@
     </div>
   </div>
 </nav>
-
-<main class="container">
+<main class="container mt-4">
   <router-outlet />
 </main>

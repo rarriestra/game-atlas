@@ -1,0 +1,41 @@
+/* ===== Navbar ===== */
+/* Icono cuadrado "GA" a la izquierda del logo */
+.navbar-brand-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background-color: #1a1a2e;
+  color: #fff;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+}
+/* Links de navegacion centrados */
+.navbar .navbar-nav .nav-link {
+  color: #444;
+  font-size: 0.95rem;
+  padding: 0.4rem 0.75rem;
+  border-bottom: 2px solid transparent;
+  transition: color 0.15s, border-color 0.15s;
+}
+.navbar .navbar-nav .nav-link:hover {
+  color: #0d6efd;
+}
+/* Resalte del link activo (igual al mockup: subrayado azul) */
+.navbar .navbar-nav .nav-link.active {
+  color: #0d6efd;
+  border-bottom: 2px solid #0d6efd;
+  font-weight: 600;
+}
+/* Buscador compacto */
+.navbar-search {
+  width: 180px;
+}
+/* Selector de usuario compacto */
+.navbar-user-select {
+  width: auto;
+  min-width: 110px;
+}

@@ -1,18 +1,21 @@
 import { Component, DoCheck, OnInit } from '@angular/core';
-import { DatePipe, DecimalPipe } from '@angular/common';
+import { DatePipe, DecimalPipe, LowerCasePipe } from '@angular/common';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { BibliotecaItem, ESTADOS, Estado } from '../../models/biblioteca-item.model';
 import { Resena } from '../../models/resena.model';
+import { Topico } from '../../models/foro.model';
+import { ForoService } from '../../services/foro-service';
 import { PerfilUsuario, Usuario } from '../../models/usuario.model';
 import { BibliotecaService } from '../../services/biblioteca-service';
 import { ResenaService } from '../../services/resena-service';
 import { SesionService } from '../../services/sesion-service';
 import { UsuarioService } from '../../services/usuario-service';
 import { ListasUsuario } from '../listas-usuario/listas-usuario';
+import { SancionesUsuario } from '../sanciones-usuario/sanciones-usuario';
 
 @Component({
   selector: 'app-perfil',
-  imports: [RouterLink, DatePipe, DecimalPipe, ListasUsuario],
+  imports: [RouterLink, DatePipe, DecimalPipe, LowerCasePipe, ListasUsuario, SancionesUsuario],
   templateUrl: './perfil.html',
   styleUrl: './perfil.css'
 })
@@ -20,6 +23,7 @@ export class Perfil implements OnInit, DoCheck {
   usuario?: PerfilUsuario;   // NUEVO (Guía 10): con seguidores, siguiendo y lo_sigo
   biblioteca: BibliotecaItem[] = [];
   resenas: Resena[] = [];
+  topicos: Topico[] = [];
   readonly estados = ESTADOS;
   mensaje = '';
   mostrarLista?: 'seguidores' | 'siguiendo';   // NUEVO: qué lista se está viendo
@@ -32,6 +36,7 @@ export class Perfil implements OnInit, DoCheck {
     private readonly usuarioService: UsuarioService,
     private readonly bibliotecaService: BibliotecaService,
     private readonly resenaService: ResenaService,
+    private readonly foroService: ForoService,
     readonly sesion: SesionService   // NUEVO: para saber quién mira (botón Seguir)
   ) {}
 
@@ -56,6 +61,7 @@ export class Perfil implements OnInit, DoCheck {
     this.cargarPerfil();
     this.bibliotecaService.getDeUsuario(id).subscribe(data => this.biblioteca = data);
     this.resenaService.getDeUsuario(id).subscribe(data => this.resenas = data);
+    this.foroService.getDeUsuario(id).subscribe(data => this.topicos = data);
   }
 
   // NUEVO: el perfil con los contadores, desde el punto de vista de quien mira

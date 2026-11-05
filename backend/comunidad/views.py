@@ -3,6 +3,7 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from moderacion.permisos import rechazar_si_suspendido
 from .models import Comentario, Topico
 from .serializers import ComentarioSerializer, TopicoDetalleSerializer, TopicoSerializer
 
@@ -20,6 +21,9 @@ class TopicoView(APIView):
         videojuego = request.query_params.get('videojuego')
         if videojuego:
             result = result.filter(videojuego_id=videojuego)
+        usuario = request.query_params.get('usuario')
+        if usuario:
+            result = result.filter(usuario_id=usuario)
         limite = request.query_params.get('limite')
         if limite and limite.isdigit():
             result = result[:int(limite)]
@@ -27,6 +31,9 @@ class TopicoView(APIView):
 
     def post(self, request):
         # CU13: crear tópico
+        bloqueo = rechazar_si_suspendido(request.data.get('usuario'))   # NUEVO (Guía 12): CU26
+        if bloqueo:
+            return bloqueo
         serializer = TopicoSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
@@ -52,6 +59,9 @@ class TopicoView(APIView):
 class ComentariosDeTopicoView(APIView):
     # CU16: POST /api/topicos/3/comentarios/  con  {"usuario": 2, "texto": "...", "respuesta_a": 7 (opcional)}
     def post(self, request, id):
+        bloqueo = rechazar_si_suspendido(request.data.get('usuario'))   # NUEVO (Guía 12): CU26
+        if bloqueo:
+            return bloqueo
         topico = get_object_or_404(Topico, id=id)
         serializer = ComentarioSerializer(data=request.data, context={'topico': topico})
         if serializer.is_valid():

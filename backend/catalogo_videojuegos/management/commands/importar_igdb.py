@@ -5,7 +5,7 @@ from catalogo_videojuegos.igdb import buscar_juegos, guardar_juego
 
 
 class Command(BaseCommand):
-    help = 'Busca juegos en IGDB y los guarda en la base de Game Atlas'
+    help = 'Busca juegos en IGDB y los guarda en la base de GameAtlas'
 
     def add_arguments(self, parser):
         # Lo que se escribe después del nombre del comando

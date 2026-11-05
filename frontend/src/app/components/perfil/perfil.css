@@ -1,0 +1,29 @@
+.biblioteca-link {
+  color: inherit;
+  text-decoration: none;
+}
+
+.biblioteca-link:hover {
+  text-decoration: underline;
+}
+
+/* Colores de badge por estado */
+.estado-completado {
+  background-color: #198754;
+  color: #fff;
+}
+
+.estado-jugando {
+  background-color: #0d6efd;
+  color: #fff;
+}
+
+.estado-pendiente {
+  background-color: #ffc107;
+  color: #000;
+}
+
+.estado-abandonado {
+  background-color: #dc3545;
+  color: #fff;
+}

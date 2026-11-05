@@ -13,6 +13,9 @@
     <p class="text-muted">{{ usuario.first_name }} {{ usuario.last_name }}</p>
   }
 
+  <!-- NUEVO (Guía 12): sanciones (solo las ven el usuario y los moderadores) -->
+  <app-sanciones-usuario [usuarioId]="usuario.id!" />
+
   <!-- NUEVO (Guía 10): seguidores, seguidos y botón Seguir (CU19 / CU20) -->
   <div class="d-flex align-items-center gap-3 mb-3">
     <button type="button" class="btn btn-link p-0 text-decoration-none" (click)="verLista('seguidores')">
@@ -75,14 +78,16 @@
   <div class="row">
     <!-- Biblioteca: portadas con su estado -->
     <div class="col-md-5 mb-4">
-      <h4>Biblioteca</h4>
+      <h4>
+        <a routerLink="/biblioteca" class="biblioteca-link">Biblioteca</a>
+      </h4>
       @for (item of biblioteca; track item.id) {
         <div class="d-flex align-items-center gap-2 mb-2">
           @if (item.videojuego.portada_url) {
             <img [src]="item.videojuego.portada_url" [alt]="item.videojuego.titulo" class="rounded" style="width: 40px">
           }
           <a [routerLink]="['/videojuegos', item.videojuego.id]">{{ item.videojuego.titulo }}</a>
-          <span class="badge text-bg-secondary ms-auto">{{ textoEstado(item.estado) }}</span>
+          <span class="badge ms-auto estado-{{ item.estado | lowercase }}">{{ textoEstado(item.estado) }}</span>
           @if (item.puntaje) {
             <span class="badge text-bg-warning">{{ item.puntaje }}/10</span>
           }
@@ -112,6 +117,24 @@
         </div>
       } @empty {
         <p class="text-muted">Todavía no escribió reseñas.</p>
+      }
+      <!-- Foros abiertos por el usuario -->
+      <h4 class="mt-4">Foros ({{ topicos.length }})</h4>
+      @for (t of topicos; track t.id) {
+        <div class="card mb-2">
+          <div class="card-body">
+            <div class="d-flex justify-content-between">
+              <a class="fw-bold" [routerLink]="['/topicos', t.id]">{{ t.titulo }}</a>
+              <span>
+                <span class="badge text-bg-secondary">{{ t.cantidad_comentarios }} comentarios</span>
+                <small class="text-muted ms-2">{{ t.creado | date: 'dd/MM/yyyy HH:mm' }}</small>
+              </span>
+            </div>
+            <p class="mt-1 mb-0 small text-muted">{{ t.videojuego.titulo }}</p>
+          </div>
+        </div>
+      } @empty {
+        <p class="text-muted">Todavía no abrió foros.</p>
       }
     </div>
   </div>

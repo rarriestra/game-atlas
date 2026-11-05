@@ -1,5 +1,5 @@
 import { Component, DoCheck, OnInit } from '@angular/core';
-import { DecimalPipe } from '@angular/common';
+import { DecimalPipe, LowerCasePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { ToastrService } from 'ngx-toastr';
@@ -13,7 +13,6 @@ import { GeneroService } from '../../services/genero-service';
 import { SesionService } from '../../services/sesion-service';
 import { BibliotecaService } from '../../services/biblioteca-service';
 import { IdiomaService } from '../../services/idioma-service';
-
 // Por qué se puede ordenar. personal = depende del usuario elegido, así que el visitante no lo ve.
 // direccion = con cuál arranca al elegirlo: lo más lógico para cada campo
 const CAMPOS_ORDEN: { valor: string; texto: string; personal: boolean; direccion: DireccionOrden }[] = [
@@ -21,10 +20,9 @@ const CAMPOS_ORDEN: { valor: string; texto: string; personal: boolean; direccion
   { valor: 'promedio', texto: 'Puntaje general', personal: false, direccion: 'desc' },
   { valor: 'estado', texto: 'Estado', personal: true, direccion: 'asc' },
 ];
-
 @Component({
   selector: 'app-videojuego-list',
-  imports: [RouterLink, FormsModule, DecimalPipe],
+  imports: [RouterLink, FormsModule, DecimalPipe, LowerCasePipe],
   templateUrl: './videojuego-list.html',
   styleUrl: './videojuego-list.css'
 })
@@ -42,7 +40,6 @@ export class VideojuegoList implements OnInit, DoCheck {
   estados = new Map<number, Estado>();   // id del juego → estado en la biblioteca del usuario elegido
   misPuntajes = new Map<number, number | null>();   // id del juego → puntaje que le puso ese usuario
   private usuarioCargado: number | undefined | null = null;   // null = todavía no cargó nada
-
   // Panel de orden: lo que se está eligiendo. Recién cuenta al tocar Aplicar
   panelOrden = false;
   primario = '';                            // '' = sin elegir
@@ -51,7 +48,6 @@ export class VideojuegoList implements OnInit, DoCheck {
   dirSecundario: DireccionOrden = 'asc';
   ordenAplicado: Orden[] = [];              // lo que se le pide a Django
   private ordenCambiaConUsuario = false;    // true si el orden aplicado usa "Estado"
-
   constructor(
     private readonly videojuegoService: VideojuegoService,
     private readonly generoService: GeneroService,
@@ -60,13 +56,11 @@ export class VideojuegoList implements OnInit, DoCheck {
     private readonly bibliotecaService: BibliotecaService,
     private readonly idiomaService: IdiomaService
   ) {}
-
   ngOnInit(): void {
     this.generoService.getAll().subscribe(data => this.generos = data);
     this.idiomaService.getAll().subscribe(data => this.idiomas = data);
     this.cargar();
   }
-
   // Igual que en el panel: si cambian el usuario en la navbar, se traen sus estados
   ngDoCheck(): void {
     const usuarioId = this.sesion.usuarioActual?.id;
@@ -91,14 +85,12 @@ export class VideojuegoList implements OnInit, DoCheck {
       }
     }
   }
-
   // 'COMPLETADO' → 'Completado'; si el juego no está en su biblioteca, 'Sin estado'
   estadoDe(videojuego: Videojuego): string {
     const estado = this.estados.get(videojuego.id!);
     return ESTADOS.find(e => e.valor === estado)?.texto ?? 'Sin estado';
   }
-
-    cargar(): void {
+  cargar(): void {
     this.videojuegoService.getPagina(this.pagina, this.busqueda, this.generoFiltro, this.idiomaFiltro,
       this.ordenAplicado, this.sesion.usuarioActual?.id).subscribe({
       next: (res) => {
@@ -111,23 +103,18 @@ export class VideojuegoList implements OnInit, DoCheck {
       error: () => this.mensaje = 'No se pudo conectar con el servidor.'
     });
   }
-
   // ---------- Orden ----------
-
   private esPersonal(campo: string): boolean {
     return !!CAMPOS_ORDEN.find(c => c.valor === campo)?.personal;
   }
-
   // Las opciones del desplegable principal
   get camposOrden() {
     return CAMPOS_ORDEN.filter(c => !c.personal || this.sesion.usuarioActual);
   }
-
   // Las del secundario: las mismas, menos la que ya se eligió como principal
   get camposSecundarios() {
     return this.camposOrden.filter(c => c.valor !== this.primario);
   }
-
   // El texto del botón, por ejemplo "Puntaje general ↓, Nombre ↑"
   get resumenOrden(): string {
     if (!this.ordenAplicado.length) return 'Nombre ↑';
@@ -135,23 +122,19 @@ export class VideojuegoList implements OnInit, DoCheck {
       .map(o => `${CAMPOS_ORDEN.find(c => c.valor === o.campo)?.texto} ${o.direccion === 'asc' ? '↑' : '↓'}`)
       .join(', ');
   }
-
   private direccionInicial(campo: string): DireccionOrden {
     return CAMPOS_ORDEN.find(c => c.valor === campo)?.direccion ?? 'asc';
   }
-
   cambiarPrimario(campo: string): void {
     this.primario = campo;
     this.dirPrimario = this.direccionInicial(campo);
     // Sin principal no hay secundario, y los dos no pueden ser el mismo
     if (!campo || this.secundario === campo) this.secundario = '';
   }
-
   cambiarSecundario(campo: string): void {
     this.secundario = campo;
     this.dirSecundario = this.direccionInicial(campo);
   }
-
   // Pasa lo elegido a ordenAplicado y vuelve a pedir la lista, desde la primera página
   aplicarOrden(): void {
     this.ordenAplicado = [];
@@ -162,13 +145,11 @@ export class VideojuegoList implements OnInit, DoCheck {
     this.pagina = 1;
     this.cargar();
   }
-
   limpiarOrden(): void {
     this.primario = '';
     this.secundario = '';
     this.aplicarOrden();
   }
-
   // Si queda como visitante, se saca "Estado" (el secundario pasa a principal)
   private sacarOrdenPersonal(): void {
     if (this.secundario && this.esPersonal(this.secundario)) this.secundario = '';
@@ -179,7 +160,6 @@ export class VideojuegoList implements OnInit, DoCheck {
     }
     this.ordenAplicado = this.ordenAplicado.filter(o => !this.esPersonal(o.campo));
   }
-
   // [1, null, 48, 49, 50, 51, 52, null, 100] para dibujar un botón por página:
   // la primera, la última y las 5 más cercanas contando la actual. null = "…" (páginas salteadas)
   get paginas(): (number | null)[] {
@@ -187,7 +167,6 @@ export class VideojuegoList implements OnInit, DoCheck {
     // Las 5 cercanas: min y max evitan que se pasen del principio o del final
     const inicio = Math.max(1, Math.min(this.pagina - 2, total - 4));
     const fin = Math.min(total, inicio + 4);
-
     const lista: (number | null)[] = [];
     if (inicio > 1) lista.push(1);
     // Si entre medio queda una sola página se muestra esa, porque "…" ocuparía el mismo lugar
@@ -199,7 +178,6 @@ export class VideojuegoList implements OnInit, DoCheck {
     if (fin < total) lista.push(total);
     return lista;
   }
-
   // Cambia de página y se la pide a Django
   irA(p: number): void {
     if (p < 1 || p > this.totalPaginas) return;
@@ -216,8 +194,6 @@ export class VideojuegoList implements OnInit, DoCheck {
   nombres(lista: { nombre: string }[]): string {
     return lista.map(item => item.nombre).join(', '); // map() crea un nuevo array con los nombres de los géneros y join() los une en un string separados por comas
   }
-
-  
   eliminar(videojuego: Videojuego): void {
     Swal.fire({
       title: '¿Eliminar este videojuego?',
@@ -236,9 +212,8 @@ export class VideojuegoList implements OnInit, DoCheck {
           this.toastr.success('Videojuego eliminado correctamente.');
           this.cargar(); // recarga la lista de videojuegos después de eliminar
         },
-          error: () => this.toastr.error('No se pudo eliminar el videojuego.')
-        });
+        error: () => this.toastr.error('No se pudo eliminar el videojuego.')
       });
-    }
- }
- 
+    });
+  }
+}

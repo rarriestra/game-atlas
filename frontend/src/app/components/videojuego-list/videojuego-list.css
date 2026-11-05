@@ -64,3 +64,10 @@
 .texto-estado {
   font-size: 0.7rem;
 }
+
+/* Colores por estado (igual que en perfil) */
+.estado-completado  { background-color: #198754; color: #fff; }
+.estado-jugando     { background-color: #0d6efd; color: #fff; }
+.estado-pendiente   { background-color: #ffc107; color: #000; }
+.estado-abandonado  { background-color: #dc3545; color: #fff; }
+.estado-none        { background-color: #6c757d; color: #fff; } /* Sin estado */

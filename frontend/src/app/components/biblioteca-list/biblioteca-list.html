@@ -1,7 +1,7 @@
 <h2 class="mb-3">Mi biblioteca</h2>
 
 @if (!sesion.usuarioActual) {
-  <div class="alert alert-info">Elegí un usuario arriba a la derecha para ver su biblioteca.</div>
+  <div class="alert alert-info">Iniciá sesión arriba a la derecha para ver tu biblioteca.</div>
 } @else {
   <!-- Los mismos filtros que el catálogo. Las pestañas de abajo cuentan sobre el resultado -->
   <form class="row g-2 mb-3" (ngSubmit)="cargar()">

@@ -28,6 +28,8 @@
         @if (puedeBorrar(topico.usuario)) {
           <button type="button" class="btn btn-sm btn-link text-danger px-0" (click)="eliminarTopico()">Eliminar tópico</button>
         }
+        <!-- NUEVO (Guía 12): CU23 -->
+        <app-boton-reportar tipo="TOPICO" [contenidoId]="topico.id" [autorId]="topico.usuario" />
       }
     </div>
   </div>
@@ -54,8 +56,9 @@
           <button type="button" class="btn btn-sm btn-link px-0 me-2" (click)="editar(c)">Editar</button>
         }
         @if (puedeBorrar(c.usuario)) {
-          <button type="button" class="btn btn-sm btn-link text-danger px-0" (click)="eliminarComentario(c.id)">Eliminar</button>
+          <button type="button" class="btn btn-sm btn-link text-danger px-0 me-2" (click)="eliminarComentario(c.id)">Eliminar</button>
         }
+        <app-boton-reportar tipo="COMENTARIO" [contenidoId]="c.id" [autorId]="c.usuario" />
       }
 
       <!-- Respuestas: corridas a la derecha con una línea, para ver de qué comentario cuelgan -->
@@ -79,8 +82,9 @@
                   <button type="button" class="btn btn-sm btn-link px-0 me-2" (click)="editar(r)">Editar</button>
                 }
                 @if (puedeBorrar(r.usuario)) {
-                  <button type="button" class="btn btn-sm btn-link text-danger px-0" (click)="eliminarComentario(r.id)">Eliminar</button>
+                  <button type="button" class="btn btn-sm btn-link text-danger px-0 me-2" (click)="eliminarComentario(r.id)">Eliminar</button>
                 }
+                <app-boton-reportar tipo="COMENTARIO" [contenidoId]="r.id" [autorId]="r.usuario" />
               }
             </div>
           }

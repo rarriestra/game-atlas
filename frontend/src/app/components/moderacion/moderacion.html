@@ -1,0 +1,79 @@
+<h2>Moderación</h2>
+
+@if (!sesion.esAdmin) {
+  <p class="text-muted">Solo los moderadores pueden ver esta página.</p>
+} @else {
+  <ul class="nav nav-tabs mb-3">
+    <li class="nav-item">
+      <button type="button" class="nav-link" [class.active]="!verResueltos" (click)="verResueltos = false">Pendientes</button>
+    </li>
+    <li class="nav-item">
+      <button type="button" class="nav-link" [class.active]="verResueltos" (click)="verResueltos = true">Resueltos</button>
+    </li>
+  </ul>
+
+  <!-- CU24: los reportes, con el contenido reportado -->
+  @for (r of reportes; track r.id) {
+    <div class="card mb-3">
+      <div class="card-body">
+        <div class="d-flex justify-content-between">
+          <span>
+            <span class="badge text-bg-secondary">{{ r.tipo_texto }}</span>
+            Reporte de <a [routerLink]="['/usuarios', r.reportante]">{{ r.reportante_nombre }}</a>
+          </span>
+          <small class="text-muted">{{ r.creado | date: 'dd/MM/yyyy HH:mm' }}</small>
+        </div>
+        <p class="mt-2 mb-2"><span class="fw-bold">Motivo:</span> {{ r.motivo }}</p>
+
+        <!-- La copia del contenido: se ve aunque ya lo hayan borrado -->
+        <blockquote class="border-start border-3 ps-3 mb-2" style="white-space: pre-line">{{ r.texto }}</blockquote>
+        <p class="small mb-2">
+          Autor: <a [routerLink]="['/usuarios', r.autor]">{{ r.autor_nombre }}</a>
+          @if (r.sanciones_autor) {
+            <span class="badge text-bg-warning ms-1">{{ r.sanciones_autor }} {{ r.sanciones_autor === 1 ? 'sanción previa' : 'sanciones previas' }}</span>
+          }
+          ·
+          @if (r.ubicacion) {
+            <a [routerLink]="enlace(r)">Ver en {{ r.ubicacion.videojuego.titulo }}</a>
+          } @else {
+            <span class="text-muted">el contenido ya no existe</span>
+          }
+        </p>
+
+        @if (r.estado === 'PENDIENTE') {
+          <!-- CU25 -->
+          <button type="button" class="btn btn-sm btn-danger" (click)="resolver(r, 'eliminar')" [disabled]="!r.ubicacion">Eliminar contenido</button>
+          <button type="button" class="btn btn-sm btn-outline-secondary ms-2" (click)="resolver(r, 'descartar')">Descartar</button>
+        } @else {
+          <span class="badge" [class.text-bg-danger]="r.estado === 'ELIMINADO'" [class.text-bg-light]="r.estado === 'DESCARTADO'">{{ r.estado_texto }}</span>
+          <small class="text-muted ms-1">por {{ r.moderador_nombre }} el {{ r.resuelto | date: 'dd/MM/yyyy HH:mm' }}</small>
+        }
+        <!-- CU26: sancionar al autor (se puede antes o después de resolver) -->
+        @if (sancionandoId !== r.id) {
+          <button type="button" class="btn btn-sm btn-outline-warning ms-2" (click)="abrirSancion(r)">Sancionar a {{ r.autor_nombre }}</button>
+        } @else {
+          <form class="border rounded p-2 mt-2" (ngSubmit)="sancionar(r)">
+            <div class="d-flex flex-wrap gap-2 mb-2">
+              <select class="form-select form-select-sm w-auto" name="tipoSancion" [(ngModel)]="tipoSancion">
+                <option value="ADVERTENCIA">Advertencia</option>
+                <option value="SUSPENSION">Suspensión</option>
+              </select>
+              @if (tipoSancion === 'SUSPENSION') {
+                <div class="input-group input-group-sm w-auto">
+                  <input type="number" class="form-control" name="dias" min="1" max="365" style="width: 80px" [(ngModel)]="dias">
+                  <span class="input-group-text">días</span>
+                </div>
+              }
+            </div>
+            <input class="form-control form-control-sm mb-2" name="motivoSancion" placeholder="Motivo" [(ngModel)]="motivoSancion">
+            <button type="submit" class="btn btn-sm btn-warning"
+                    [disabled]="tipoSancion === 'SUSPENSION' && !(dias >= 1 && dias <= 365)">Aplicar sanción</button>
+            <button type="button" class="btn btn-sm btn-link" (click)="sancionandoId = undefined">Cancelar</button>
+          </form>
+        }
+      </div>
+    </div>
+  } @empty {
+    <p class="text-muted">{{ verResueltos ? 'Todavía no se resolvió ningún reporte.' : 'No hay reportes pendientes.' }}</p>
+  }
+}
