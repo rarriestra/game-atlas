@@ -21,4 +21,5 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include('catalogo_videojuegos.urls')), # usamos include para separar las urls de la app catalogo_videojuegos
     path('api/', include('usuarios.urls')), # usamos include para separar las urls de la app usuarios
+    path('api/', include('biblioteca.urls')),   # NUEVO
 ]

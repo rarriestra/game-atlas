@@ -19,6 +19,17 @@
           <span class="badge text-bg-secondary me-1">{{ p.nombre }}</span>
         }
       </div>
+      <!-- NUEVO (CU05): promedio de puntajes de todos los usuarios -->
+      <p class="mt-3 mb-0">
+        @if (videojuego.puntaje_promedio !== null) {
+          <span class="fs-4 fw-bold">{{ videojuego.puntaje_promedio }}</span> / 10
+          <span class="text-muted small">({{ videojuego.cantidad_puntajes }} {{ videojuego.cantidad_puntajes === 1 ? 'puntaje' : 'puntajes' }})</span>
+        } @else {
+          <span class="text-muted small">Todavía nadie lo calificó.</span>
+        }
+      </p>
+      <!-- NUEVO (CU04 y CU05): panel para agregar a la biblioteca, cambiar estado y calificar -->
+      <app-biblioteca-panel [videojuegoId]="videojuego.id!" (cambio)="actualizarPromedio()" />
     </div>
     <div class="col-md-8">
       @if (sesion.esAdmin) {

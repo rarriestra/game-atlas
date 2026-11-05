@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'rest_framework', # Porque no es solo una librería que se importa: es una app de Django
     'catalogo_videojuegos',
     'usuarios',
+    'biblioteca',   # NUEVO
 ]
 
 MIDDLEWARE = [

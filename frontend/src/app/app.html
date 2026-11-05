@@ -3,6 +3,9 @@
     <a class="navbar-brand" routerLink="/">Game Atlas</a>
     <div class="navbar-nav">
       <a class="nav-link" routerLink="/videojuegos" routerLinkActive="active">Videojuegos</a>
+      @if (sesion.usuarioActual) {
+        <a class="nav-link" routerLink="/biblioteca" routerLinkActive="active">Mi biblioteca</a>
+      }
       @if (sesion.esAdmin) {
         <a class="nav-link" routerLink="/generos" routerLinkActive="active">Géneros</a>
         <a class="nav-link" routerLink="/plataformas" routerLinkActive="active">Plataformas</a>
