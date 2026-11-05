@@ -2,7 +2,8 @@ import { Injectable } from '@angular/core';
 // HttpParams arma los filtros de la URL (?titulo=...&genero=...)
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, map } from 'rxjs';
-import { ApiResponse, Videojuego } from '../models/videojuego.model';
+import { ApiResponse, Videojuego , Pagina} from '../models/videojuego.model';
+
 
 const baseUrl = '/api/videojuegos/';
 
@@ -44,7 +45,14 @@ export class VideojuegoService {
   delete(id: number): Observable<unknown> {
     return this.http.delete(`${baseUrl}${id}/`);
   }
-
+  // Pide una página del catálogo, con los mismos filtros que getAll
+  getPagina(pagina: number, titulo = '', genero?: number): Observable<Pagina<Videojuego>> {
+    let params = new HttpParams().set('page', pagina).set('page_size', 10);
+    if (titulo) params = params.set('titulo', titulo);
+    if (genero) params = params.set('genero', genero);
+    // Acá no usamos map: necesitamos data, count y pages, no solo data
+    return this.http.get<Pagina<Videojuego>>(baseUrl, { params });
+  }
   // la API recibe los ids en generos_ids y plataformas_ids
   // private = solo se usa dentro de este servicio
   private paraEnviar(videojuego: Videojuego) {

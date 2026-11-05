@@ -4,7 +4,7 @@
 </div>
 
 <!-- buscador. Al apretar Enter o "Buscar", (ngSubmit) llama a cargar() con los filtros -->
-<form class="row g-2 mb-3" (ngSubmit)="cargar()">
+<form class="row g-2 mb-3" (ngSubmit)="pagina = 1; cargar()">
   <div class="col-md-6">
     <!-- Lo que escribís queda en la variable busqueda del .ts -->
     <input class="form-control" name="busqueda" placeholder="Buscar por título"
@@ -33,24 +33,27 @@
   <div class="alert alert-danger">{{ mensaje }}</div>
 }
 
-<table class="table table-striped align-middle">
+<p class="text-muted">{{ total }} juegos</p>
+
+<table class="table table-striped align-middle tabla-videojuegos">
   <thead>
     <tr>
       <th>Título</th>
       <th>Desarrollador</th>
       <th>Géneros</th>
       <th>Plataformas</th>
-      <th>Lanzamiento</th>
-      <th></th>
+      <th class="col-lanzamiento">Lanzamiento</th>
+      <th class="col-acciones"></th>
     </tr>
   </thead>
   <tbody>
     @for (v of videojuegos; track v.id) {  <!--Armamos la tabla de videojuegos con un bucle for que recorre la lista de videojuegos y genera las filas para cada uno. -->
       <tr>
-        <td>{{ v.titulo }}</td>
-        <td>{{ v.desarrollador }}</td>
-        <td>{{ nombres(v.generos) }}</td>
-        <td>{{ nombres(v.plataformas) }}</td>
+        <!-- [title] muestra el texto completo al pasar el mouse, por si quedó cortado -->
+        <td [title]="v.titulo">{{ v.titulo }}</td>
+        <td [title]="v.desarrollador">{{ v.desarrollador }}</td>
+        <td [title]="nombres(v.generos)">{{ nombres(v.generos) }}</td>
+        <td [title]="nombres(v.plataformas)">{{ nombres(v.plataformas) }}</td>
         <td>{{ v.fecha_lanzamiento }}</td>
         <td class="text-end">
           <a class="btn btn-sm btn-outline-secondary" [routerLink]="['/videojuegos', v.id]">Ver / editar</a>
@@ -59,8 +62,28 @@
       </tr>
     } @empty {
       <tr>
-        <td colspan="5" class="text-center text-muted">No se encontraron videojuegos.</td>
+        <td colspan="6" class="text-center text-muted">No se encontraron videojuegos.</td>
       </tr>
     }
   </tbody>
 </table>
+
+<!-- Solo aparece si hay más de una página -->
+@if (totalPaginas > 1) {
+  <nav>
+    <ul class="pagination justify-content-center">
+      <!-- [class.disabled] agrega la clase solo si la condición se cumple -->
+      <li class="page-item" [class.disabled]="pagina === 1">
+        <button class="page-link" (click)="irA(pagina - 1)">Anterior</button>
+      </li>
+      @for (p of paginas; track p) {
+        <li class="page-item" [class.active]="p === pagina">
+          <button class="page-link" (click)="irA(p)">{{ p }}</button>
+        </li>
+      }
+      <li class="page-item" [class.disabled]="pagina === totalPaginas">
+        <button class="page-link" (click)="irA(pagina + 1)">Siguiente</button>
+      </li>
+    </ul>
+  </nav>
+}

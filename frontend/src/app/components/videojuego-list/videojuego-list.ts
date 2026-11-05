@@ -19,6 +19,9 @@ export class VideojuegoList implements OnInit {
   busqueda = '';
   generoFiltro?: number;
   mensaje = '';
+  pagina = 1;         // página actual
+  totalPaginas = 1;   // lo dice Django
+  total = 0;          // cantidad total de juegos encontrados
 
   constructor(private readonly videojuegoService: VideojuegoService, private readonly generoService: GeneroService, private readonly toastr: ToastrService) {}
 
@@ -27,11 +30,29 @@ export class VideojuegoList implements OnInit {
     this.cargar();
   }
 
-  cargar(): void {
-    this.videojuegoService.getAll(this.busqueda,this.generoFiltro).subscribe({
-      next: (data) => this.videojuegos = data,
+    cargar(): void {
+    this.videojuegoService.getPagina(this.pagina, this.busqueda, this.generoFiltro).subscribe({
+      next: (res) => {
+        this.videojuegos = res.data;
+        this.totalPaginas = res.pages;
+        this.total = res.count;
+        this.pagina = res.page;
+        this.mensaje = '';
+      },
       error: () => this.mensaje = 'No se pudo conectar con el servidor.'
     });
+  }
+
+  // [1, 2, 3, ...] para dibujar un botón por página
+  get paginas(): number[] {
+    return Array.from({ length: this.totalPaginas }, (_, i) => i + 1);
+  }
+
+  // Cambia de página y se la pide a Django
+  irA(p: number): void {
+    if (p < 1 || p > this.totalPaginas) return;
+    this.pagina = p;
+    this.cargar();
   }
   limpiar(): void {
     this.busqueda = '';

@@ -34,6 +34,7 @@ class VideojuegoSerializer(serializers.ModelSerializer):
     class Meta:
         model = Videojuego
         fields = '__all__' # Serialize all fields of the Videojuego model
+        read_only_fields = ['igdb_id'] # lo completa solo la importación, no se edita a mano
 
     def create(self, validated_data):
         generos = validated_data.pop('generos_ids', [])

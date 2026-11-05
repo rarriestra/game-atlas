@@ -2,10 +2,10 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from django.shortcuts import get_object_or_404
-
+from .igdb import buscar_juegos, guardar_juego, importar_si_hace_falta
 from .models import Genero, Plataforma, Videojuego
 from .serializers import VideojuegoSerializer, PlataformaSerializer, GeneroSerializer
-
+from django.core.paginator import Paginator
 
 class VideojuegoView(APIView):
     def get(self, request, *args, **kwargs):
@@ -19,6 +19,8 @@ class VideojuegoView(APIView):
             )
         result = Videojuego.objects.all().order_by('titulo')
         titulo = request.query_params.get('titulo')
+        if titulo and len(titulo.strip()) >= 3:
+            importar_si_hace_falta(titulo)  # antes de buscar en la base, trae de IGDB lo que falte
         genero = request.query_params.get('genero')
         plataforma = request.query_params.get('plataforma')
         if titulo:
@@ -27,6 +29,24 @@ class VideojuegoView(APIView):
             result = result.filter(generos__id=genero)
         if plataforma:
             result = result.filter(plataformas__id=plataforma)
+                # Paginación: solo si Angular manda ?page=  (si no, devuelve todo como antes)
+        page = request.query_params.get('page')
+        if page:
+            try:
+                # entre 1 y 100 por página; si mandan algo que no es número, 10
+                page_size = min(max(int(request.query_params.get('page_size', 10)), 1), 100)
+            except ValueError:
+                page_size = 10
+            paginador = Paginator(result, page_size)   # parte el queryset en páginas
+            pagina = paginador.get_page(page)          # si piden una página que no existe, da la última
+            serializer = VideojuegoSerializer(pagina.object_list, many=True)
+            return Response({
+                'status': 'success',
+                'data': serializer.data,       # solo los juegos de esta página
+                'count': paginador.count,      # total de juegos (con los filtros aplicados)
+                'pages': paginador.num_pages,  # cantidad de páginas
+                'page': pagina.number,         # página actual
+            })
         serializer = VideojuegoSerializer(result, many=True)
         return Response(
             {'status': 'success', 'data': serializer.data},
