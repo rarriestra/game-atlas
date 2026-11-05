@@ -1,0 +1,22 @@
+/* Anchos fijos: las columnas no dependen del largo del texto */
+.tabla-videojuegos {
+  table-layout: fixed;
+}
+
+/* Todo en una sola línea, así todas las filas miden lo mismo.
+   Si el texto no entra, se corta con "..." */
+.tabla-videojuegos th,
+.tabla-videojuegos td {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.col-lanzamiento {
+  width: 130px;
+}
+
+/* Tiene que alcanzar para los dos botones */
+.col-acciones {
+  width: 200px;
+}
