@@ -23,7 +23,7 @@ class Command(BaseCommand):
             videojuego, creado = guardar_juego(juego)
             if creado:
                 nuevos += 1
-                self.stdout.write(self.style.SUCCESS(f'+ {videojuego.titulo}'))
+                self.stdout.write(self.style.SUCCESS(f'+ {videojuego.titulo}')) # stdout es la salida estándar, style.SUCCESS es para que se vea en verde
             else:
                 self.stdout.write(f'= {videojuego.titulo} (ya estaba)')
 

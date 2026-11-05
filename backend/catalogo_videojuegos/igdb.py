@@ -1,6 +1,9 @@
 import os
 from datetime import datetime, timezone
 
+import hashlib
+from django.core.cache import cache
+
 import requests
 from django.db import transaction
 
@@ -97,3 +100,23 @@ def guardar_juego(juego):
     videojuego.generos.set(generos)
     videojuego.plataformas.set(plataformas)
     return videojuego, True
+
+def importar_si_hace_falta(texto, limite=20):
+    """Busca en IGDB y guarda los juegos que todavía no tengamos.
+    Recuerda cada búsqueda por un día para no consultar IGDB de nuevo con el mismo texto."""
+    texto = texto.strip().lower()
+    # md5 convierte el texto en un código sin espacios ni símbolos raros, que es lo que acepta el caché
+    clave = 'igdb-busqueda-' + hashlib.md5(texto.encode('utf-8')).hexdigest()
+    if cache.get(clave):
+        return 0  # ya se buscó hace poco: no molestamos a IGDB
+    try:
+        juegos = buscar_juegos(texto, limite)
+    except (requests.RequestException, RuntimeError):
+        return 0  # si IGDB falla o no hay credenciales, seguimos con lo que hay en la base
+    nuevos = 0
+    for juego in juegos:
+        _, creado = guardar_juego(juego)
+        if creado:
+            nuevos += 1
+    cache.set(clave, True, 60 * 60 * 24)  # 24 horas
+    return nuevos

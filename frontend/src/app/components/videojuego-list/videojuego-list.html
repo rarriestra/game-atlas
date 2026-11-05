@@ -4,7 +4,7 @@
 </div>
 
 <!-- buscador. Al apretar Enter o "Buscar", (ngSubmit) llama a cargar() con los filtros -->
-<form class="row g-2 mb-3" (ngSubmit)="cargar()">
+<form class="row g-2 mb-3" (ngSubmit)="pagina = 1; cargar()">
   <div class="col-md-6">
     <!-- Lo que escribís queda en la variable busqueda del .ts -->
     <input class="form-control" name="busqueda" placeholder="Buscar por título"
@@ -32,6 +32,8 @@
 @if (mensaje) {
   <div class="alert alert-danger">{{ mensaje }}</div>
 }
+
+<p class="text-muted">{{ total }} juegos</p>
 
 <table class="table table-striped align-middle">
   <thead>
@@ -64,3 +66,23 @@
     }
   </tbody>
 </table>
+
+<!-- Solo aparece si hay más de una página -->
+@if (totalPaginas > 1) {
+  <nav>
+    <ul class="pagination justify-content-center">
+      <!-- [class.disabled] agrega la clase solo si la condición se cumple -->
+      <li class="page-item" [class.disabled]="pagina === 1">
+        <button class="page-link" (click)="irA(pagina - 1)">Anterior</button>
+      </li>
+      @for (p of paginas; track p) {
+        <li class="page-item" [class.active]="p === pagina">
+          <button class="page-link" (click)="irA(p)">{{ p }}</button>
+        </li>
+      }
+      <li class="page-item" [class.disabled]="pagina === totalPaginas">
+        <button class="page-link" (click)="irA(pagina + 1)">Siguiente</button>
+      </li>
+    </ul>
+  </nav>
+}

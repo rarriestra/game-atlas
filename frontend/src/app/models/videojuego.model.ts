@@ -16,3 +16,10 @@ export interface ApiResponse<T> { // <T> es un genérico: data puede ser un Vide
 status: string;
 data: T;
 }
+// Respuesta paginada: los juegos de la página + datos para el paginador
+export interface Pagina<T> {
+  data: T[];
+  count: number;
+  pages: number;
+  page: number;
+}
