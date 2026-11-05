@@ -18,7 +18,7 @@
         <div class="card-body p-2">
           <div class="small fw-bold text-body">{{ v.titulo }}</div>
           @if (v.puntaje_promedio !== null) {
-            <span class="badge text-bg-warning mt-1">{{ v.puntaje_promedio }}/10</span>
+            <span class="badge text-bg-warning mt-1">{{ v.puntaje_promedio | number: '1.2-2' }}/10</span>
           }
         </div>
       </a>
@@ -43,7 +43,7 @@
           @if (r.puntaje) {
             <span class="badge text-bg-warning">{{ r.puntaje }}/10</span>
           }
-          <small class="text-muted ms-2">{{ r.creada | date: 'dd/MM/yyyy' }}</small>
+          <small class="text-muted ms-2">{{ r.creada | date: 'dd/MM/yyyy HH:mm' }}</small>
         </span>
       </div>
       <!-- slice corta el texto a 200 caracteres; la reseña completa está en la ficha -->

@@ -28,7 +28,7 @@
     <div class="col-6 col-md">
       <div class="card text-center">
         <div class="card-body py-2">
-          <div class="fs-4 fw-bold">{{ promedio ?? '-' }}</div>
+          <div class="fs-4 fw-bold">{{ (promedio | number: '1.2-2') ?? '-' }}</div>
           <div class="small text-muted">Puntaje promedio</div>
         </div>
       </div>
@@ -67,7 +67,7 @@
                 @if (r.puntaje) {
                   <span class="badge text-bg-warning">{{ r.puntaje }}/10</span>
                 }
-                <small class="text-muted ms-2">{{ r.creada | date: 'dd/MM/yyyy' }}</small>
+                <small class="text-muted ms-2">{{ r.creada | date: 'dd/MM/yyyy HH:mm' }}</small>
               </span>
             </div>
             <p class="mt-2 mb-0" style="white-space: pre-line">{{ r.texto }}</p>

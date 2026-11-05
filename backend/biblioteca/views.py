@@ -1,10 +1,11 @@
+from django.db.models import Count
 from django.shortcuts import get_object_or_404
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from .models import BibliotecaItem, Resena
-from .serializers import BibliotecaItemSerializer, ResenaSerializer
+from .models import BibliotecaItem, LikeResena, Resena, RespuestaResena
+from .serializers import BibliotecaItemSerializer, ResenaSerializer, RespuestaResenaSerializer
 
 
 class BibliotecaView(APIView):
@@ -56,7 +57,12 @@ class ResenaView(APIView):
             resena = get_object_or_404(Resena, id=id)
             return Response({'status': 'success', 'data': ResenaSerializer(resena).data})
 
-        result = Resena.objects.select_related('usuario', 'videojuego')
+        # annotate agrega a cada reseña un campo calculado: cuántos likes tiene
+        result = (Resena.objects.select_related('usuario', 'videojuego')
+                  .prefetch_related('respuestas__usuario')
+                  .annotate(cantidad_likes=Count('likes')))
+        if request.query_params.get('orden') == 'votadas':
+            result = result.order_by('-cantidad_likes', '-creada')  # NUEVO: las más votadas primero
         videojuego = request.query_params.get('videojuego')  # reseñas de un juego (ficha)
         usuario = request.query_params.get('usuario')        # reseñas de un usuario (perfil)
         if videojuego:
@@ -66,7 +72,8 @@ class ResenaView(APIView):
         limite = request.query_params.get('limite')          # las últimas N (inicio)
         if limite and limite.isdigit():
             result = result[:int(limite)]
-        serializer = ResenaSerializer(result, many=True)
+        # context: datos extra para el serializer. 'yo' = quién mira, para calcular me_gusta
+        serializer = ResenaSerializer(result, many=True, context={'yo': request.query_params.get('yo')})
         return Response({'status': 'success', 'data': serializer.data})
 
     def post(self, request):
@@ -87,4 +94,44 @@ class ResenaView(APIView):
     def delete(self, request, id):
         resena = get_object_or_404(Resena, id=id)
         resena.delete()
+        return Response({'status': 'success', 'data': 'Record Deleted'})
+
+
+class LikeResenaView(APIView):
+    # POST /api/resenas/5/like/  con  {"usuario": 2}
+    # Funciona como un interruptor: si no tenía like lo agrega; si ya lo tenía, lo saca
+    def post(self, request, id):
+        resena = get_object_or_404(Resena, id=id)
+        usuario_id = request.data.get('usuario')
+        if not usuario_id:
+            return Response({'status': 'error', 'data': 'Falta el usuario'}, status=status.HTTP_400_BAD_REQUEST)
+        if int(usuario_id) == resena.usuario_id:
+            return Response({'status': 'error', 'data': 'No podés darle like a tu propia reseña'},
+                            status=status.HTTP_400_BAD_REQUEST)
+        like = LikeResena.objects.filter(resena=resena, usuario_id=usuario_id).first()
+        if like:
+            like.delete()
+            me_gusta = False
+        else:
+            LikeResena.objects.create(resena=resena, usuario_id=usuario_id)
+            me_gusta = True
+        return Response({'status': 'success', 'data': {'likes': resena.likes.count(), 'me_gusta': me_gusta}})
+
+
+class RespuestasDeResenaView(APIView):
+    # POST /api/resenas/5/respuestas/  con  {"usuario": 2, "texto": "..."}
+    def post(self, request, id):
+        resena = get_object_or_404(Resena, id=id)
+        serializer = RespuestaResenaSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save(resena=resena)  # save(...) agrega datos que no vinieron en el JSON
+            return Response({'status': 'success', 'data': serializer.data}, status=status.HTTP_201_CREATED)
+        return Response({'status': 'error', 'data': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class RespuestaView(APIView):
+    # DELETE /api/respuestas/8/
+    def delete(self, request, id):
+        respuesta = get_object_or_404(RespuestaResena, id=id)
+        respuesta.delete()
         return Response({'status': 'success', 'data': 'Record Deleted'})

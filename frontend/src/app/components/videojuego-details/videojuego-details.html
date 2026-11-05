@@ -22,7 +22,7 @@
       <!-- NUEVO (CU05): promedio de puntajes de todos los usuarios -->
       <p class="mt-3 mb-0">
         @if (videojuego.puntaje_promedio !== null) {
-          <span class="fs-4 fw-bold">{{ videojuego.puntaje_promedio }}</span> / 10
+          <span class="fs-4 fw-bold">{{ videojuego.puntaje_promedio | number: '1.2-2' }}</span> / 10
           <span class="text-muted small">({{ videojuego.cantidad_puntajes }} {{ videojuego.cantidad_puntajes === 1 ? 'puntaje' : 'puntajes' }})</span>
         } @else {
           <span class="text-muted small">Todavía nadie lo calificó.</span>
