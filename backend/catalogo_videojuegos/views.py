@@ -18,6 +18,8 @@ class VideojuegoView(APIView):
                 status=status.HTTP_200_OK
             )
         result = Videojuego.objects.all().order_by('titulo')
+        if request.query_params.get('orden') == 'recientes':
+            result = result.order_by('-id')  # NUEVO: los últimos agregados primero (para el inicio)
         titulo = request.query_params.get('titulo')
         if titulo and len(titulo.strip()) >= 3:
             importar_si_hace_falta(titulo)  # antes de buscar en la base, trae de IGDB lo que falte

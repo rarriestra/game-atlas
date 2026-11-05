@@ -12,10 +12,11 @@ import { PlataformaService } from '../../services/plataforma-service';
 import { VideojuegoService } from '../../services/videojuego-service';
 import { SesionService } from '../../services/sesion-service';
 import { BibliotecaPanel } from '../biblioteca-panel/biblioteca-panel';
+import { ResenasJuego } from '../resenas-juego/resenas-juego';
 
 @Component({
   selector: 'app-videojuego-details',
-  imports: [FormsModule, NgClass, RouterLink, BibliotecaPanel], // NgClass
+  imports: [FormsModule, NgClass, RouterLink, BibliotecaPanel, ResenasJuego], // NgClass
   templateUrl: './videojuego-details.html',
   styleUrl: './videojuego-details.css'
 })
@@ -24,6 +25,7 @@ export class VideojuegoDetails implements OnInit { // implements OnInit provee e
   generos: Genero[] = [];          // lista para dibujar las casillas de géneros
   plataformas: Plataforma[] = [];  // lista para las casillas de plataformas
   mensaje = ''; // ahora solo se usa para "El videojuego no existe"
+  version = 0;  // NUEVO: sube cada vez que cambia algo en "Mi biblioteca" (avisa a las reseñas)
 
   constructor(
     private readonly route: ActivatedRoute, // ActivatedRoute da acceso a la información de la ruta activa que cargó el componente, como los parámetros de la ruta.
@@ -75,6 +77,7 @@ export class VideojuegoDetails implements OnInit { // implements OnInit provee e
   // NUEVO: el panel avisa que cambió un puntaje; se pide el juego de nuevo solo para el promedio
   actualizarPromedio(): void {
     if (!this.videojuego?.id) return;
+    this.version++;   // NUEVO: las reseñas vuelven a revisar si ya calificaste
     this.videojuegoService.get(this.videojuego.id).subscribe(data => {
       if (!this.videojuego) return;
       this.videojuego.puntaje_promedio = data.puntaje_promedio;

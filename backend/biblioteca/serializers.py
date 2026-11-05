@@ -2,7 +2,7 @@ from django.contrib.auth.models import User
 from rest_framework import serializers
 
 from catalogo_videojuegos.models import Videojuego
-from .models import BibliotecaItem
+from .models import BibliotecaItem, Resena
 
 
 class VideojuegoResumenSerializer(serializers.ModelSerializer):
@@ -40,6 +40,53 @@ class BibliotecaItemSerializer(serializers.ModelSerializer):
 
     def update(self, instance, validated_data):
         # El dueño y el juego no se cambian: para eso se quita y se agrega de nuevo
+        validated_data.pop('usuario', None)
+        validated_data.pop('videojuego', None)
+        return super().update(instance, validated_data)
+
+
+class ResenaSerializer(serializers.ModelSerializer):
+    videojuego = VideojuegoResumenSerializer(read_only=True)
+    videojuego_id = serializers.PrimaryKeyRelatedField(
+        queryset=Videojuego.objects.all(), source='videojuego', write_only=True
+    )
+    usuario = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
+    # source='usuario.username': sigue la relación y trae el nombre (solo lectura)
+    usuario_nombre = serializers.CharField(source='usuario.username', read_only=True)
+    # El puntaje que el autor le dio al juego en su biblioteca (se muestra junto a la reseña)
+    puntaje = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Resena
+        fields = ['id', 'usuario', 'usuario_nombre', 'videojuego', 'videojuego_id',
+                  'puntaje', 'texto', 'creada', 'editada']
+        read_only_fields = ['creada', 'editada']
+
+    def get_puntaje(self, obj):
+        item = BibliotecaItem.objects.filter(usuario=obj.usuario, videojuego=obj.videojuego).first()
+        return item.puntaje if item else None
+
+    def validate_texto(self, valor):
+        """validate_<campo>: DRF la llama solo para ese campo."""
+        valor = valor.strip()
+        if len(valor) < 10:
+            raise serializers.ValidationError('La reseña tiene que tener al menos 10 caracteres.')
+        return valor
+
+    def validate(self, attrs):
+        """CU06: solo se puede reseñar un juego que el usuario ya calificó (CU05)."""
+        if self.instance is None:  # solo al crear; al editar ya se validó en su momento
+            calificado = BibliotecaItem.objects.filter(
+                usuario=attrs['usuario'], videojuego=attrs['videojuego'], puntaje__isnull=False
+            ).exists()
+            if not calificado:
+                raise serializers.ValidationError(
+                    'Para escribir una reseña, primero calificá el juego desde tu biblioteca.'
+                )
+        return attrs
+
+    def update(self, instance, validated_data):
+        # CU07: al editar solo cambia el texto (el autor y el juego quedan fijos)
         validated_data.pop('usuario', None)
         validated_data.pop('videojuego', None)
         return super().update(instance, validated_data)
