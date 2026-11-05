@@ -15,6 +15,7 @@ class Plataforma(models.Model):
 
 
 class Videojuego(models.Model):
+    igdb_id = models.PositiveIntegerField(null = True, blank = True, unique = True) # el id del juego en la API de IGDB
     titulo = models.CharField(max_length=200)
     sinopsis = models.TextField(blank=True)
     portada_url = models.URLField(blank=True) # la imagen de la portada se extrae de la API a través de la URL
