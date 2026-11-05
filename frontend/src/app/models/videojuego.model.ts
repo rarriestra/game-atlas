@@ -11,6 +11,8 @@ distribuidor = '';
 // Llegan completos ({ id, nombre }) gracias al serializer anidado
 generos: Genero[] = [];
 plataformas: Plataforma[] = [];
+puntaje_promedio: number | null = null;   // NUEVO: promedio de los usuarios (lo calcula Django)
+cantidad_puntajes = 0;                     // NUEVO: cuántos lo calificaron
 }
 export interface ApiResponse<T> { // <T> es un genérico: data puede ser un Videojuego, una lista, un Genero, etc.
 status: string;

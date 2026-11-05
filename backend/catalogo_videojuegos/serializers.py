@@ -1,3 +1,4 @@
+from django.db.models import Avg, Count
 from rest_framework import serializers
 from .models import Genero, Plataforma, Videojuego
 
@@ -31,10 +32,25 @@ class VideojuegoSerializer(serializers.ModelSerializer):
         write_only=True,
     )
 
+    # NUEVO (CU05): promedio de los puntajes que le dieron los usuarios en sus bibliotecas
+    puntaje_promedio = serializers.SerializerMethodField()
+    cantidad_puntajes = serializers.SerializerMethodField()
+
     class Meta:
         model = Videojuego
         fields = '__all__' # Serialize all fields of the Videojuego model
         read_only_fields = ['igdb_id'] # lo completa solo la importación, no se edita a mano
+
+    def _puntajes(self, obj):
+        # en_bibliotecas es el related_name del ForeignKey en BibliotecaItem
+        return obj.en_bibliotecas.filter(puntaje__isnull=False).aggregate(promedio=Avg('puntaje'), cantidad=Count('id'))
+
+    def get_puntaje_promedio(self, obj):
+        promedio = self._puntajes(obj)['promedio']
+        return round(promedio, 1) if promedio is not None else None  # None = nadie lo calificó
+
+    def get_cantidad_puntajes(self, obj):
+        return self._puntajes(obj)['cantidad']
 
     def create(self, validated_data):
         generos = validated_data.pop('generos_ids', [])

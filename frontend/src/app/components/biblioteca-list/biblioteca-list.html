@@ -1,0 +1,71 @@
+<h2 class="mb-3">Mi biblioteca</h2>
+
+@if (!sesion.usuarioActual) {
+  <div class="alert alert-info">Elegí un usuario arriba a la derecha para ver su biblioteca.</div>
+} @else {
+  <!-- Pestañas por estado, como la lista de MyAnimeList -->
+  <ul class="nav nav-pills mb-3">
+    <li class="nav-item">
+      <button type="button" class="nav-link" [class.active]="!filtro" (click)="filtro = undefined">
+        Todos ({{ cantidad() }})
+      </button>
+    </li>
+    @for (e of estados; track e.valor) {
+      <li class="nav-item">
+        <button type="button" class="nav-link" [class.active]="filtro === e.valor" (click)="filtro = e.valor">
+          {{ e.texto }} ({{ cantidad(e.valor) }})
+        </button>
+      </li>
+    }
+  </ul>
+
+  <table class="table align-middle">
+    <thead>
+      <tr>
+        <th style="width: 60px"></th>
+        <th>Juego</th>
+        <th style="width: 170px">Estado</th>
+        <th style="width: 140px">Puntaje</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (item of itemsFiltrados; track item.id) {
+        <tr>
+          <td>
+            @if (item.videojuego.portada_url) {
+              <img [src]="item.videojuego.portada_url" [alt]="item.videojuego.titulo" class="rounded" style="width: 45px">
+            }
+          </td>
+          <td><a [routerLink]="['/videojuegos', item.videojuego.id]">{{ item.videojuego.titulo }}</a></td>
+          <td>
+            <select class="form-select form-select-sm" [ngModel]="item.estado"
+                    (ngModelChange)="actualizar(item, { estado: $event })">
+              @for (e of estados; track e.valor) {
+                <option [ngValue]="e.valor">{{ e.texto }}</option>
+              }
+            </select>
+          </td>
+          <td>
+            <select class="form-select form-select-sm" [ngModel]="item.puntaje" [disabled]="!puedeCalificar(item)"
+                    (ngModelChange)="actualizar(item, { puntaje: $event })">
+              <option [ngValue]="null">-</option>
+              @for (n of puntajes; track n) {
+                <option [ngValue]="n">{{ n }}</option>
+              }
+            </select>
+          </td>
+          <td class="text-end">
+            <button type="button" class="btn btn-sm btn-outline-danger" (click)="quitar(item)">Quitar</button>
+          </td>
+        </tr>
+      } @empty {
+        <tr>
+          <td colspan="5" class="text-center text-muted">
+            No hay juegos acá. Agregalos desde la ficha de cada juego.
+          </td>
+        </tr>
+      }
+    </tbody>
+  </table>
+}

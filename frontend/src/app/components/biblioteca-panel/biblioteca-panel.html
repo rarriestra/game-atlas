@@ -1,0 +1,44 @@
+<div class="card mt-3">
+  <div class="card-body">
+    <h5 class="card-title">Mi biblioteca</h5>
+
+    @if (!sesion.usuarioActual) {
+      <!-- Visitante -->
+      <p class="text-muted small mb-0">Elegí un usuario arriba a la derecha para agregar este juego a tu biblioteca.</p>
+    } @else if (!item) {
+      <!-- Alta: todavía no lo tiene. Un botón por estado -->
+      <p class="small mb-2">Agregar como:</p>
+      <div class="d-flex flex-wrap gap-1">
+        @for (e of estados; track e.valor) {
+          <button type="button" class="btn btn-sm btn-outline-primary" (click)="agregar(e.valor)">{{ e.texto }}</button>
+        }
+      </div>
+    } @else {
+      <!-- Ya lo tiene: cambiar estado y puntaje -->
+      <label class="form-label small mb-1" for="estado">Estado</label>
+      <select id="estado" class="form-select form-select-sm mb-2"
+              [ngModel]="item.estado" (ngModelChange)="cambiarEstado($event)">
+        @for (e of estados; track e.valor) {
+          <option [ngValue]="e.valor">{{ e.texto }}</option>
+        }
+      </select>
+
+      <label class="form-label small mb-1" for="puntaje">Puntaje</label>
+      <!-- [disabled] apaga el desplegable si el estado es Pendiente (CU04) -->
+      <select id="puntaje" class="form-select form-select-sm"
+              [ngModel]="item.puntaje" (ngModelChange)="calificar($event)" [disabled]="!puedeCalificar">
+        <option [ngValue]="null">Sin puntaje</option>
+        @for (n of puntajes; track n) {
+          <option [ngValue]="n">{{ n }}</option>
+        }
+      </select>
+      @if (!puedeCalificar) {
+        <div class="form-text">Para calificar, el estado tiene que ser Jugando, Completado o Abandonado.</div>
+      }
+
+      <button type="button" class="btn btn-sm btn-link text-danger px-0 mt-2" (click)="quitar()">
+        Quitar de mi biblioteca
+      </button>
+    }
+  </div>
+</div>

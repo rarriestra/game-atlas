@@ -11,10 +11,11 @@ import { GeneroService } from '../../services/genero-service';
 import { PlataformaService } from '../../services/plataforma-service'; 
 import { VideojuegoService } from '../../services/videojuego-service';
 import { SesionService } from '../../services/sesion-service';
+import { BibliotecaPanel } from '../biblioteca-panel/biblioteca-panel';
 
 @Component({
   selector: 'app-videojuego-details',
-  imports: [FormsModule, NgClass, RouterLink], // NgClass
+  imports: [FormsModule, NgClass, RouterLink, BibliotecaPanel], // NgClass
   templateUrl: './videojuego-details.html',
   styleUrl: './videojuego-details.css'
 })
@@ -69,6 +70,16 @@ export class VideojuegoDetails implements OnInit { // implements OnInit provee e
     this.videojuego.plataformas = this.tienePlataforma(plataforma)
       ? this.videojuego.plataformas.filter(p => p.id !== plataforma.id)
       : [...this.videojuego.plataformas, plataforma];
+  }
+
+  // NUEVO: el panel avisa que cambió un puntaje; se pide el juego de nuevo solo para el promedio
+  actualizarPromedio(): void {
+    if (!this.videojuego?.id) return;
+    this.videojuegoService.get(this.videojuego.id).subscribe(data => {
+      if (!this.videojuego) return;
+      this.videojuego.puntaje_promedio = data.puntaje_promedio;
+      this.videojuego.cantidad_puntajes = data.cantidad_puntajes;
+    });
   }
 
   actualizar(): void {
