@@ -1,6 +1,6 @@
 from django.db.models import Avg, Count
 from rest_framework import serializers
-from .models import Genero, Plataforma, Videojuego
+from .models import Genero, Idioma, Plataforma, Videojuego
 
 
 class GeneroSerializer(serializers.ModelSerializer):
@@ -15,9 +15,16 @@ class PlataformaSerializer(serializers.ModelSerializer):
         fields = '__all__' # Serialize all fields of the Plataforma model
 
 
+class IdiomaSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Idioma
+        fields = '__all__' # Serialize all fields of the Idioma model
+
+
 class VideojuegoSerializer(serializers.ModelSerializer):
     generos = GeneroSerializer(many=True, read_only=True)
     plataformas = PlataformaSerializer(many=True, read_only=True)
+    idiomas = IdiomaSerializer(many=True, read_only=True) # solo lectura: los carga la importación de IGDB
 
     generos_ids = serializers.PrimaryKeyRelatedField(
         queryset=Genero.objects.all(),

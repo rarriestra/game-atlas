@@ -2,7 +2,8 @@
   <div class="container">
     <a class="navbar-brand" routerLink="/">Game Atlas</a>
     <div class="navbar-nav">
-      <a class="nav-link" routerLink="/videojuegos" routerLinkActive="active">Videojuegos</a>
+      <!-- exact: se resalta solo en el catálogo (/videojuegos), no dentro de la ficha de un juego (/videojuegos/5) -->
+      <a class="nav-link" routerLink="/videojuegos" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">Videojuegos</a>
       @if (sesion.usuarioActual) {
         <a class="nav-link" routerLink="/biblioteca" routerLinkActive="active">Mi biblioteca</a>
         <a class="nav-link" [routerLink]="['/usuarios', sesion.usuarioActual.id]" routerLinkActive="active">Mi perfil</a>

@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     'catalogo_videojuegos',
     'usuarios',
     'biblioteca',   # NUEVO
+    'comunidad',    # NUEVO (Guía 9)
 ]
 
 MIDDLEWARE = [

@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { DecimalPipe, NgClass } from '@angular/common';  // NgClass: para la validación visual (is-invalid). DecimalPipe: pipe number, para el promedio
 import { FormsModule } from '@angular/forms';
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { ToastrService } from 'ngx-toastr';              // avisos en la esquina
 import Swal from 'sweetalert2';                            // cartel de confirmación
 import { Genero } from '../../models/genero.model';        
@@ -13,10 +13,11 @@ import { VideojuegoService } from '../../services/videojuego-service';
 import { SesionService } from '../../services/sesion-service';
 import { BibliotecaPanel } from '../biblioteca-panel/biblioteca-panel';
 import { ResenasJuego } from '../resenas-juego/resenas-juego';
+import { ForoJuego } from '../foro-juego/foro-juego';
 
 @Component({
   selector: 'app-videojuego-details',
-  imports: [FormsModule, NgClass, DecimalPipe, RouterLink, BibliotecaPanel, ResenasJuego], // NgClass
+  imports: [FormsModule, NgClass, DecimalPipe, BibliotecaPanel, ResenasJuego, ForoJuego], // NgClass
   templateUrl: './videojuego-details.html',
   styleUrl: './videojuego-details.css'
 })
@@ -26,6 +27,7 @@ export class VideojuegoDetails implements OnInit { // implements OnInit provee e
   plataformas: Plataforma[] = [];  // lista para las casillas de plataformas
   mensaje = ''; // ahora solo se usa para "El videojuego no existe"
   version = 0;  // NUEVO: sube cada vez que cambia algo en "Mi biblioteca" (avisa a las reseñas)
+  pestana: 'resenas' | 'foro' = 'resenas';   // NUEVO (Guía 9): qué pestaña se ve abajo
 
   constructor(
     private readonly route: ActivatedRoute, // ActivatedRoute da acceso a la información de la ruta activa que cargó el componente, como los parámetros de la ruta.
@@ -46,6 +48,11 @@ export class VideojuegoDetails implements OnInit { // implements OnInit provee e
     // trae todos los géneros y plataformas para armar las casillas
     this.generoService.getAll().subscribe(data => this.generos = data);
     this.plataformaService.getAll().subscribe(data => this.plataformas = data);
+  }
+
+  // 'Español, Inglés, Japonés' para mostrar en la ficha
+  get textoIdiomas(): string {
+    return (this.videojuego?.idiomas ?? []).map(i => i.nombre).join(', ');
   }
 
   // true si el juego ya tiene ese género (la casilla aparece tildada).

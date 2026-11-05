@@ -53,3 +53,19 @@
 } @empty {
   <p class="text-muted">Todavía no hay reseñas.</p>
 }
+
+<!-- NUEVO (Guía 9): actividad de los foros -->
+<h4 class="mt-5">Tópicos recientes</h4>
+<div class="list-group mb-4">
+  @for (t of topicos; track t.id) {
+    <a class="list-group-item list-group-item-action" [routerLink]="['/topicos', t.id]">
+      <div class="d-flex justify-content-between">
+        <span class="fw-bold">{{ t.titulo }}</span>
+        <span class="badge text-bg-secondary align-self-center">{{ t.cantidad_comentarios }}</span>
+      </div>
+      <small class="text-muted">{{ t.videojuego.titulo }} · por {{ t.usuario_nombre }}</small>
+    </a>
+  } @empty {
+    <p class="text-muted">Todavía no hay tópicos.</p>
+  }
+</div>
